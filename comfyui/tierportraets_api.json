@@ -1,0 +1,446 @@
+{
+ "1": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "sd_xl_base_1.0.safetensors"
+  }
+ },
+ "2": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "text, letters, watermark, signature, logo, frame, border, window, multiple animals, full body, photo, photorealistic, 3d render, dark, scary, angry, deformed, extra eyes, extra ears, cropped head, busy background, saturated neon colors, blurry",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "3": {
+  "class_type": "EmptyLatentImage",
+  "inputs": {
+   "width": 1024,
+   "height": 1024,
+   "batch_size": 1
+  }
+ },
+ "10": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute baby fox with orange fur and white cheeks, wearing a sage green knitted beanie with a cream pompom and a dusty blue knitted scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "11": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261201,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "10",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "12": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "11",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "13": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_fuchs",
+   "images": [
+    "12",
+    0
+   ]
+  }
+ },
+ "20": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute lion cub with a fluffy golden-brown mane, wearing a terracotta knitted scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "21": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261202,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "20",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "22": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "21",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "23": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_loewe",
+   "images": [
+    "22",
+    0
+   ]
+  }
+ },
+ "30": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute brown teddy bear cub, wearing a dusty blue knitted beanie with a cream pompom and a dusty blue knitted scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "31": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261203,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "30",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "32": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "31",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "33": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_baer",
+   "images": [
+    "32",
+    0
+   ]
+  }
+ },
+ "40": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute grey-beige bunny with long ears with pink inner ears, wearing a sage green knitted scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "41": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261204,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "40",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "42": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "41",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "43": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_hase",
+   "images": [
+    "42",
+    0
+   ]
+  }
+ },
+ "50": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute baby penguin chick with a white face and orange beak, wearing a terracotta knitted beanie with a cream pompom and a dusty pink scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "51": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261205,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "50",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "52": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "51",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "53": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_pinguin",
+   "images": [
+    "52",
+    0
+   ]
+  }
+ },
+ "60": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute baby otter with brown fur and a light muzzle, wearing a sage green knitted beanie with a cream pompom and a caramel knitted scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "61": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261206,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "60",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "62": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "61",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "63": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_otter",
+   "images": [
+    "62",
+    0
+   ]
+  }
+ },
+ "70": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "a cute baby giraffe with small ossicones and soft spots, wearing a dusty blue knitted scarf, soft watercolor children's book illustration, cute and friendly, big round eyes, rosy cheeks, muted pastel palette of sage green, dusty pink, cream and warm beige, gentle shading, head and shoulders portrait, centered, facing the viewer, plain light cream background, no background objects, christmas mood, high quality",
+   "clip": [
+    "1",
+    1
+   ]
+  }
+ },
+ "71": {
+  "class_type": "KSampler",
+  "inputs": {
+   "seed": 20261207,
+   "steps": 30,
+   "cfg": 6.0,
+   "sampler_name": "dpmpp_2m",
+   "scheduler": "karras",
+   "denoise": 1.0,
+   "model": [
+    "1",
+    0
+   ],
+   "positive": [
+    "70",
+    0
+   ],
+   "negative": [
+    "2",
+    0
+   ],
+   "latent_image": [
+    "3",
+    0
+   ]
+  }
+ },
+ "72": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "71",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "73": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": "tier_giraffe",
+   "images": [
+    "72",
+    0
+   ]
+  }
+ }
+}

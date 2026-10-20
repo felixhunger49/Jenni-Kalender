@@ -4,7 +4,13 @@ Alle Masse in Millimetern. Jedes Bastelteil (Part) besteht aus Flaechen
 (Polygonen). Gemeinsame Kanten zweier Flaechen werden automatisch zu
 Falzlinien, alle uebrigen Kanten zu Schnittlinien.
 """
+import base64
+import glob
+import io
 import math
+import os
+
+TIER_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'tiere')
 
 # ---------------------------------------------------------------- Farben
 INK = '#5A4636'
@@ -311,9 +317,43 @@ def clip_uid():
     return 'c%d' % _clip_id[0]
 
 
+_img_cache = {}
+
+
+def animal_image(kind):
+    """Eigenes Tierbild (z.B. aus ComfyUI) als data-URI, falls tiere/<kind>*.png|jpg existiert."""
+    if kind in _img_cache:
+        return _img_cache[kind]
+    uri = None
+    files = sorted(glob.glob(os.path.join(TIER_DIR, '*%s*.png' % kind)) + glob.glob(os.path.join(TIER_DIR, '*%s*.jp*g' % kind)))
+    if files:
+        path = files[-1]
+        try:
+            from PIL import Image
+            im = Image.open(path).convert('RGB')
+            im.thumbnail((700, 700))
+            buf = io.BytesIO()
+            im.save(buf, 'JPEG', quality=88)
+            uri = 'data:image/jpeg;base64,' + base64.b64encode(buf.getvalue()).decode()
+        except ImportError:
+            mime = 'image/png' if path.endswith('.png') else 'image/jpeg'
+            uri = 'data:%s;base64,%s' % (mime, base64.b64encode(open(path, 'rb').read()).decode())
+    _img_cache[kind] = uri
+    return uri
+
+
 def window_with_animal(cx, top, w, h, kind, scarf, frame=CREAM2, inner='#F8F1E6'):
     cid = clip_uid()
     p = arch_path(cx, top, w, h)
+    img = animal_image(kind)
+    if img:
+        return ''.join([
+            '<clipPath id="%s"><path d="%s"/></clipPath>' % (cid, p),
+            '<path d="%s" fill="%s"/>' % (p, inner),
+            '<image href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)"/>' % (
+                img, f(cx - w / 2), f(top), f(w), f(h), cid),
+            '<path d="%s" fill="none" stroke="%s" stroke-width="%s"/>' % (p, frame, f(w * 0.06)),
+        ])
     return ''.join([
         '<clipPath id="%s"><path d="%s"/></clipPath>' % (cid, p),
         '<path d="%s" fill="%s"/>' % (p, inner),
