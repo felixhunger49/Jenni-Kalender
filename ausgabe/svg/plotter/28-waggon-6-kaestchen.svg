@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="210mm" height="297mm" viewBox="0 0 210 297">
+<g id="falzen" inkscape:groupmode="layer" inkscape:label="Falzen (rillen)">
+<path d="M17.5,42 L72.5,42 M72.5,42 L72.5,97 M72.5,97 L17.5,97 M72.5,97 L72.5,152 M72.5,152 L17.5,152 M72.5,152 L72.5,207 M72.5,207 L17.5,207 M72.5,207 L72.5,262" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+<path d="M137.5,207 L192.5,207 M192.5,262 L137.5,262 M137.5,262 L137.5,207 M137.5,152 L192.5,152 M137.5,207 L137.5,152 M137.5,97 L192.5,97 M137.5,152 L137.5,97 M137.5,97 L137.5,42" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+</g>
+<g id="schneiden" inkscape:groupmode="layer" inkscape:label="Schneiden">
+<path d="M17.5,97 L17.5,42 M17.5,152 L17.5,97 M17.5,207 L17.5,152 M72.5,262 L17.5,262 M17.5,262 L17.5,207 M72.5,207 L127.5,207 M127.5,207 L127.5,262 M127.5,262 L72.5,262 M17.5,42 L20,34 M20,34 L70,34 M70,34 L72.5,42 M72.5,42 L80.5,44.5 M80.5,44.5 L80.5,94.5 M80.5,94.5 L72.5,97 M72.5,97 L80.5,99.5 M80.5,99.5 L80.5,149.5 M80.5,149.5 L72.5,152 M72.5,152 L80.5,154.5 M80.5,154.5 L80.5,204.5 M80.5,204.5 L72.5,207" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M192.5,207 L192.5,262 M192.5,152 L192.5,207 M192.5,97 L192.5,152 M137.5,42 L192.5,42 M192.5,42 L192.5,97 M82.5,42 L137.5,42 M137.5,97 L82.5,97 M82.5,97 L82.5,42 M192.5,262 L190,270 M190,270 L140,270 M140,270 L137.5,262 M137.5,262 L129.5,259.5 M129.5,259.5 L129.5,209.5 M129.5,209.5 L137.5,207 M137.5,207 L129.5,204.5 M129.5,204.5 L129.5,154.5 M129.5,154.5 L137.5,152 M137.5,152 L129.5,149.5 M129.5,149.5 L129.5,99.5 M129.5,99.5 L137.5,97" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+</g></svg>

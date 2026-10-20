@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="297mm" height="210mm" viewBox="0 0 297 210">
+<g id="falzen" inkscape:groupmode="layer" inkscape:label="Falzen (rillen)">
+<path d="M58,68 L238,68 M238,68 L238,158 M238,158 L58,158 M58,158 L58,68 M238,38 L238,68 M58,68 L58,38 M238,158 L238,188 M58,188 L58,158" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+</g>
+<g id="schneiden" inkscape:groupmode="layer" inkscape:label="Schneiden">
+<path d="M58,38 L238,38 M238,188 L58,188 M28,68 L58,68 M58,158 L28,158 M28,158 L28,68 M238,68 L268,68 M268,68 L268,158 M268,158 L238,158 M58,38 L48,41 M48,41 L48,65 M48,65 L58,68 M238,68 L248,65 M248,65 L248,41 M248,41 L238,38 M58,158 L48,161 M48,161 L48,185 M48,185 L58,188 M238,188 L248,185 M248,185 L248,161 M248,161 L238,158" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+</g></svg>
