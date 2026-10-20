@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="210mm" height="297mm" viewBox="0 0 210 297">
+<g id="falzen" inkscape:groupmode="layer" inkscape:label="Falzen (rillen)">
+<path d="M74,64 L14,64" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+<path d="M138,64 L78,64" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+<path d="M202,64 L142,64" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+<path d="M74,90 L14,90" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+<path d="M138,90 L78,90" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+<path d="M202,90 L142,90" fill="none" stroke="#0000FF" stroke-width="0.3" stroke-dasharray="2.2,1.4"/>
+
+
+</g>
+<g id="schneiden" inkscape:groupmode="layer" inkscape:label="Schneiden">
+<path d="M14,56 L74,56 M74,56 L74,64 M14,64 L14,56 M74,64 L74,72 M74,72 L14,72 M14,72 L14,64" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M78,56 L138,56 M138,56 L138,64 M78,64 L78,56 M138,64 L138,72 M138,72 L78,72 M78,72 L78,64" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M142,56 L202,56 M202,56 L202,64 M142,64 L142,56 M202,64 L202,72 M202,72 L142,72 M142,72 L142,64" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M14,82 L74,82 M74,82 L74,90 M14,90 L14,82 M74,90 L74,98 M74,98 L14,98 M14,98 L14,90" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M78,82 L138,82 M138,82 L138,90 M78,90 L78,82 M138,90 L138,98 M138,98 L78,98 M78,98 L78,90" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M142,82 L202,82 M202,82 L202,90 M142,90 L142,82 M202,90 L202,98 M202,98 L142,98 M142,98 L142,90" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M12,128 L106,128 M106,128 L106,134 M106,134 L12,134 M12,134 L12,128" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M108,128 L202,128 M202,128 L202,134 M202,134 L108,134 M108,134 L108,128" fill="none" stroke="#FF0000" stroke-width="0.3" stroke-linecap="round"/>
+</g></svg>

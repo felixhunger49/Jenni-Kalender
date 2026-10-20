@@ -32,7 +32,7 @@ WAGONS = [
     dict(n=1, animal='loewe', name='Löwe', c='#B7C3A5', d='#8C9B79', acc='#EAD3B5', scarf='#C98E6E'),
     dict(n=2, animal='baer', name='Bär', c='#E6C0B4', d='#C39386', acc='#F5E4DA', scarf='#9DB3C2'),
     dict(n=3, animal='hase', name='Hase', c='#E8DBC5', d='#C1AB89', acc='#F6EEE1', scarf='#B7C3A5'),
-    dict(n=4, animal='pinguin', name='Pinguin', c='#BCCDD9', d='#8CA3B4', acc='#E6EDF2', scarf='#E2A69A'),
+    dict(n=4, animal='elefant', name='Elefant', c='#BCCDD9', d='#8CA3B4', acc='#E6EDF2', scarf='#E2A69A'),
     dict(n=5, animal='otter', name='Otter', c='#C3CCA8', d='#96A17A', acc='#EDEFE0', scarf='#D9B48A'),
     dict(n=6, animal='giraffe', name='Giraffe', c='#EFE0C9', d='#D1B38E', acc='#F1D3CB', scarf='#B5C7D3'),
 ]
@@ -51,7 +51,8 @@ WG = 120.0          # Waggon innen (Laenge = Breite)
 WG_H = 80.0         # Waggon Wandhoehe
 WG_LOW = 35.0       # Hoehe Zwischenboden (Stirnklappe Teil A)
 WG_B = 119.0        # Teil B (etwas kleiner, passt in Teil A)
-WG_WHEEL_R = 20.0
+WG_WHEEL_R = 17.0
+WG_WHEELS = (26.0, 94.0)
 WHEEL_DROP = 8.0    # so weit ragen alle Raeder unter den Boden
 CH_L, CH_W, CH_H = 180.0, 90.0, 30.0       # Lok-Fahrgestell
 CAB_A, CAB_B, CAB_H = 60.0, 75.0, 95.0     # Fuehrerhaus (laengs, quer, hoch)
@@ -60,7 +61,7 @@ BOILER_R = 32.5
 BOILER_L = 110.0
 CHIM_R = 12.0
 CHIM_H = 40.0
-LOCO_REAR_R, LOCO_FRONT_R = 24.0, 17.0
+LOCO_REAR_R, LOCO_FRONT_R = 19.0, 15.0
 
 
 def mix(c1, c2, t):
@@ -321,25 +322,25 @@ _img_cache = {}
 
 
 def animal_image(kind):
-    """Eigenes Tierbild (z.B. aus ComfyUI) als data-URI, falls tiere/<kind>*.png|jpg existiert."""
+    """Eigenes Tierbild (freigestellt) als (data-URI, Breite/Hoehe), falls tiere/<kind>*.png|jpg existiert."""
     if kind in _img_cache:
         return _img_cache[kind]
-    uri = None
+    res = None
     files = sorted(glob.glob(os.path.join(TIER_DIR, '*%s*.png' % kind)) + glob.glob(os.path.join(TIER_DIR, '*%s*.jp*g' % kind)))
     if files:
         path = files[-1]
         try:
             from PIL import Image
-            im = Image.open(path).convert('RGB')
-            im.thumbnail((700, 700))
+            im = Image.open(path).convert('RGBA')
+            im.thumbnail((480, 480))
             buf = io.BytesIO()
-            im.save(buf, 'JPEG', quality=88)
-            uri = 'data:image/jpeg;base64,' + base64.b64encode(buf.getvalue()).decode()
+            im.save(buf, 'PNG', optimize=True)
+            res = ('data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode(), im.size[0] / im.size[1])
         except ImportError:
             mime = 'image/png' if path.endswith('.png') else 'image/jpeg'
-            uri = 'data:%s;base64,%s' % (mime, base64.b64encode(open(path, 'rb').read()).decode())
-    _img_cache[kind] = uri
-    return uri
+            res = ('data:%s;base64,%s' % (mime, base64.b64encode(open(path, 'rb').read()).decode()), 1.0)
+    _img_cache[kind] = res
+    return res
 
 
 def window_with_animal(cx, top, w, h, kind, scarf, frame=CREAM2, inner='#F8F1E6'):
@@ -347,12 +348,20 @@ def window_with_animal(cx, top, w, h, kind, scarf, frame=CREAM2, inner='#F8F1E6'
     p = arch_path(cx, top, w, h)
     img = animal_image(kind)
     if img:
+        # Tier schaut aus dem Fenster: Pfoten liegen auf der Fensterbank (wird danach darueber gezeichnet)
+        uri, aspect = img
+        hmax, wmax = h + 1.5, w * 0.98
+        ih = min(hmax, wmax / aspect)
+        iw = ih * aspect
+        bottom = top + h + 2.5
         return ''.join([
-            '<clipPath id="%s"><path d="%s"/></clipPath>' % (cid, p),
             '<path d="%s" fill="%s"/>' % (p, inner),
-            '<image href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)"/>' % (
-                img, f(cx - w / 2), f(top), f(w), f(h), cid),
+            '<path d="%s" fill="%s" opacity="0.35" clip-path="url(#%s)"/>' % (p, mix(inner, WOOD2, 0.4), cid),
+            '<clipPath id="%s"><rect x="%s" y="%s" width="%s" height="%s"/></clipPath>' % (
+                cid, f(cx - w), f(top + h * 0.7), f(2 * w), f(h)),
             '<path d="%s" fill="none" stroke="%s" stroke-width="%s"/>' % (p, frame, f(w * 0.06)),
+            '<image href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMax meet"/>' % (
+                uri, f(cx - iw / 2), f(bottom - ih), f(iw), f(ih)),
         ])
     return ''.join([
         '<clipPath id="%s"><path d="%s"/></clipPath>' % (cid, p),
@@ -363,6 +372,10 @@ def window_with_animal(cx, top, w, h, kind, scarf, frame=CREAM2, inner='#F8F1E6'
         '</g>',
         '<path d="%s" fill="none" stroke="%s" stroke-width="%s"/>' % (p, frame, f(w * 0.06)),
     ])
+
+
+def wheel_art(cx, cy, r):
+    return '<g transform="translate(%s,%s)">%s</g>' % (f(cx - r), f(cy - r), wheel_decor(r)(2 * r, 2 * r))
 
 
 def wheel_guide(cx, cy, r):
@@ -386,9 +399,8 @@ def wagon_side(W, guides=True):
         o.append('<rect x="31" y="46" width="58" height="4.5" rx="2" fill="%s"/>' % CREAM2)
         o.append(bunting(34, 86, 50.5, 7, [W['d'], CREAM2, PINK], 4))
         o.append(gift(60, 66, 9, PINK if W['n'] != 2 else W['acc']))
-        if guides:
-            o.append(wheel_guide(28, h - 12, WG_WHEEL_R))
-            o.append(wheel_guide(92, h - 12, WG_WHEEL_R))
+        for x in WG_WHEELS:
+            o.append(wheel_art(x, h + WHEEL_DROP - WG_WHEEL_R, WG_WHEEL_R))
         return ''.join(o)
     return d
 
@@ -500,8 +512,8 @@ def chassis_side(mirror):
             o.append(dot(x, 6.5, 1, mix(LOCO['d'], '#000000', 0.25)))
         o.append('<rect x="0" y="%s" width="%s" height="1.5" fill="%s" opacity="0.6"/>' % (f(h - 3), f(w), LOCO['cream']))
         front, rear = (w - 45, w - 135) if mirror else (45, 135)
-        o.append(wheel_guide(front, h + WHEEL_DROP - LOCO_FRONT_R, LOCO_FRONT_R))
-        o.append(wheel_guide(rear, h + WHEEL_DROP - LOCO_REAR_R, LOCO_REAR_R))
+        o.append(wheel_art(front, h + WHEEL_DROP - LOCO_FRONT_R, LOCO_FRONT_R))
+        o.append(wheel_art(rear, h + WHEEL_DROP - LOCO_REAR_R, LOCO_REAR_R))
         return ''.join(o)
     return d
 
@@ -653,6 +665,59 @@ class Part:
         self.notes = []     # svg-Text, der mitgedruckt wird (nicht geschnitten)
 
     # orient: Richtung von "oben" des Dekors: 0=oben, 90=rechts, 180=unten, 270=links
+    @staticmethod
+    def frame(x, y, w, h, orient):
+        if orient == 0:
+            return ((x, y), (1, 0), (0, 1), w, h)
+        if orient == 180:
+            return ((x + w, y + h), (-1, 0), (0, -1), w, h)
+        if orient == 90:
+            return ((x + w, y), (0, 1), (-1, 0), h, w)
+        return ((x, y + h), (0, -1), (1, 0), h, w)
+
+    def wall_with_wheels(self, x, y, w, h, fill, decor, orient, wheels, n=24):
+        """Wand (Rechteck x,y,w,h auf der Seite) mit angesetzten Radboegen unten (lokal).
+        wheels: [(cx_lokal, r)]; die Raeder ragen WHEEL_DROP unter die Unterkante.
+        Gibt die Radboegen (Seitenkoordinaten) zurueck."""
+        fr = self.frame(x, y, w, h, orient)
+        (px, py), u, d, lw, lh = fr
+        M = lambda X, Y: (px + X * u[0] + Y * d[0], py + X * u[1] + Y * d[1])
+        loc = [(0, 0), (lw, 0), (lw, lh)]
+        cut = set()
+        arcs = []
+        for cx, r in sorted(wheels, reverse=True):
+            cy = lh + WHEEL_DROP - r
+            t0 = math.asin((lh - cy) / r)
+            arc = [(cx + r * math.cos(t0 + (math.pi - 2 * t0) * k / n), cy + r * math.sin(t0 + (math.pi - 2 * t0) * k / n))
+                   for k in range(n + 1)]
+            arc[0] = (arc[0][0], lh)
+            arc[-1] = (arc[-1][0], lh)
+            start = len(loc)
+            loc.extend(arc)
+            cut.update(range(start, start + n))
+            arcs.append([M(*q) for q in arc])
+        loc.append((0, lh))
+        self.polys.append(dict(pts=[M(*q) for q in loc], fill=fill, decor=decor, frame=fr, tab=False, cut=cut))
+        return arcs
+
+    def rect_with_notches(self, x, y, w, h, fill, decor, arcs, orient=0):
+        """Rechteck, aus dessen Kanten die Radboegen der Nachbarwaende ausgespart sind."""
+        corners = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
+        pts, skip = [], set()
+        for k in range(4):
+            A, B = corners[k], corners[(k + 1) % 4]
+            pts.append(A)
+            on = []
+            for arc in arcs:
+                if all(abs((q[0] - A[0]) * (B[1] - A[1]) - (q[1] - A[1]) * (B[0] - A[0])) < 1e-6 * max(w, h) * 10 for q in (arc[0], arc[-1])):
+                    a = arc if math.dist(arc[0], A) < math.dist(arc[-1], A) else arc[::-1]
+                    on.append((math.dist(a[0], A), a))
+            for _, a in sorted(on):
+                start = len(pts)
+                pts.extend(a)
+                skip.update(range(start, start + len(a) - 1))
+        self.polys.append(dict(pts=pts, fill=fill, decor=decor, frame=self.frame(x, y, w, h, orient), tab=False, skip=skip))
+
     def rect(self, x, y, w, h, fill, decor=None, orient=0, tab=False):
         pts = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
         if orient == 0:
@@ -698,13 +763,18 @@ class Part:
 
     # ---- Kantenklassifikation
     def lines(self):
-        polys = [p['pts'] for p in self.polys]
-        edges = []
-        for i, p in enumerate(polys):
+        edges, forced = [], []
+        for i, P in enumerate(self.polys):
+            p = P['pts']
             n = len(p)
             for k in range(n):
+                if k in P.get('skip', ()):
+                    continue
+                if k in P.get('cut', ()):
+                    forced.append((p[k], p[(k + 1) % n]))
+                    continue
                 edges.append((i, p[k], p[(k + 1) % n]))
-        cuts, folds = [], []
+        cuts, folds = list(forced), []
         for (i, a, b) in edges:
             dx, dy = b[0] - a[0], b[1] - a[1]
             L2 = dx * dx + dy * dy
@@ -759,8 +829,8 @@ class Part:
             if p['decor'] and p['frame']:
                 (x0, y0), u, dd, w, h = p['frame']
                 cid = clip_uid()
-                o.append('<g transform="matrix(%s,%s,%s,%s,%s,%s)"><clipPath id="%s"><rect x="-0.3" y="-0.3" width="%s" height="%s"/></clipPath><g clip-path="url(#%s)">%s</g></g>' % (
-                    f(u[0]), f(u[1]), f(dd[0]), f(dd[1]), f(x0), f(y0), cid, f(w + 0.6), f(h + 0.6), cid, p['decor'](w, h)))
+                o.append('<clipPath id="%s"><polygon points="%s"/></clipPath><g clip-path="url(#%s)"><g transform="matrix(%s,%s,%s,%s,%s,%s)">%s</g></g>' % (
+                    cid, pts_str(p['pts']), cid, f(u[0]), f(u[1]), f(dd[0]), f(dd[1]), f(x0), f(y0), p['decor'](w, h)))
         for c in self.circles:
             o.append('<circle cx="%s" cy="%s" r="%s" fill="%s" stroke="%s" stroke-width="0.8"/>' % (
                 f(c['cx']), f(c['cy']), f(c['r']), c['fill'], c['fill']))
@@ -797,6 +867,44 @@ class Part:
 
 
 # ---------------------------------------------------------------- Konkrete Teile
+BOX_TUCK = 13.0
+BOX_DUST = 12.0
+
+
+def part_box(W, num, ox, oy):
+    """Kaestchen mit angesetztem Klappdeckel (ein Teil). Waende senkrecht gestapelt,
+    Rand links, Boden rechts. Breite 178, Hoehe 228 (inkl. Schlusslasche oben)."""
+    P = Part('Kästchen %d' % num)
+    s, t = BOX, BOX_TAB
+    deco, base = box_wall(W)
+    wx = ox + BOX_TUCK + s
+    for k in range(4):
+        y = oy + k * s
+        if k == 3:
+            # Vorderwand mit Griffmulde am Rand
+            g = 7.0
+            pts = [(wx, y), (wx + s, y), (wx + s, y + s), (wx, y + s)]
+            arc = [(wx + g * math.sin(math.pi * i / 16), y + s / 2 + g * math.cos(math.pi * i / 16)) for i in range(17)]
+            P.polys.append(dict(pts=pts + arc, fill=base, decor=deco, frame=P.frame(wx, y, s, s, 270), tab=False))
+        else:
+            P.rect(wx, y, s, s, base, deco, orient=270)
+    lidc = mix(W['c'], WHITE, 0.25)
+    P.rect(ox + BOX_TUCK, oy + s, s, s, lidc, lid_top(W, num), orient=90)
+    # Einsteckzunge
+    P.polys.append(dict(pts=[(ox + BOX_TUCK, oy + s), (ox + BOX_TUCK, oy + 2 * s), (ox + 1, oy + 2 * s - 6), (ox + 1, oy + s + 6)],
+                        fill=lidc, decor=None, frame=None, tab=False))
+    # Staubklappen an den Seitenwaenden
+    for k in (0, 2):
+        y = oy + k * s
+        P.polys.append(dict(pts=[(wx, y), (wx, y + s), (wx - BOX_DUST, y + s - 16), (wx - BOX_DUST, y + 3)],
+                            fill=base, decor=None, frame=None, tab=False))
+    P.rect(wx + s, oy + 3 * s, s, s, mix(W['c'], WHITE, 0.6), plain_label(['Boden']), orient=0)
+    P.tab((wx + s, oy), (wx, oy), t, inset=2.5)
+    for k in range(3):
+        P.tab((wx + s, oy + (k + 1) * s), (wx + s, oy + k * s), t, inset=2.5)
+    return P
+
+
 def part_box_bottom(W, ox, oy, rotated=False):
     """Kaestchen-Unterteil als L-Netz. rotated=True -> um 180 Grad gedreht."""
     P = Part('Kästchen-Unterteil')
@@ -846,12 +954,16 @@ def part_wagon_a(W, ox, oy):
     P = Part('Waggon %d Teil A' % W['n'])
     e, s, H = WG_LOW, WG, WG_H
     fx, fy = ox + e, oy + H
-    P.rect(fx, fy, s, s, mix(W['c'], WHITE, 0.55),
-           plain_label(['Waggon %d · Teil A' % W['n'], 'Unterseite – wird nicht gesehen',
-                        'Wände nach oben falten,', 'bedruckte Seite nach außen'], size=4.2))
+    floor_label = plain_label(['Waggon %d · Teil A' % W['n'], 'Unterseite – wird nicht gesehen',
+                               'Wände nach oben falten,', 'bedruckte Seite nach außen',
+                               'Räder beim Ausschneiden mit ausschneiden'], size=4.2)
+    P.rect(fx, fy, s, s, mix(W['c'], WHITE, 0.55), floor_label)
     side = wagon_side(W)
-    P.rect(fx, oy, s, H, W['c'], side, orient=0)
-    P.rect(fx, fy + s, s, H, W['c'], side, orient=180)
+    wh = [(x, WG_WHEEL_R) for x in WG_WHEELS]
+    arcs = P.wall_with_wheels(fx, oy, s, H, W['c'], side, 0, wh)
+    arcs += P.wall_with_wheels(fx, fy + s, s, H, W['c'], side, 180, wh)
+    P.polys.pop(0)
+    P.rect_with_notches(fx, fy, s, s, mix(W['c'], WHITE, 0.55), floor_label, arcs)
     endf = wagon_endflap(W)
     P.rect(ox, fy, e, s, W['c'], endf, orient=270)
     P.rect(fx + s, fy, e, s, W['c'], endf, orient=90)
@@ -884,8 +996,10 @@ def part_chassis(ox, oy):
     L, Wd, H = CH_L, CH_W, CH_H
     tx, ty = ox + H, oy + H
     P.rect(tx, ty, L, Wd, LOCO['d'], chassis_top)
-    P.rect(tx, oy, L, H, LOCO['c'], chassis_side(True), orient=180)
-    P.rect(tx, ty + Wd, L, H, LOCO['c'], chassis_side(False), orient=0)
+    P.wall_with_wheels(tx, oy, L, H, LOCO['c'], chassis_side(True), 180,
+                       [(L - 45, LOCO_FRONT_R), (L - 135, LOCO_REAR_R)])
+    P.wall_with_wheels(tx, ty + Wd, L, H, LOCO['c'], chassis_side(False), 0,
+                       [(45, LOCO_FRONT_R), (135, LOCO_REAR_R)])
     P.rect(ox, ty, H, Wd, LOCO['c'], chassis_front, orient=90)
     P.rect(tx + L, ty, H, Wd, LOCO['c'], chassis_back, orient=270)
     for a, b in (((tx, ty), (tx, oy)), ((tx + L, oy), (tx + L, ty)),

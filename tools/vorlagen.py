@@ -129,34 +129,14 @@ def build_pages():
     p.extra.append(label(150, 160, 'Rauchwolke (optional)'))
     pages.append(p)
 
-    # ---------------- Raeder
-    p = Page('raeder-1', 'Räder (1/2)', '16 Waggon-Räder und 4 Lok-Räder. Tipp: auf Graupappe kleben, dann ausschneiden – so werden sie stabiler.')
-    for i in range(16):
-        cx = 22 + 44 * (i % 4) + 4
-        cy = 48 + 44 * (i // 4)
-        p.add(part_wheel(cx, cy, WG_WHEEL_R))
-    for cx, r in ((40, LOCO_REAR_R), (96, LOCO_REAR_R), (142, LOCO_FRONT_R), (182, LOCO_FRONT_R)):
-        p.add(part_wheel(cx, 255, r))
-    p.extra.append(label(68, 284, '2× Lok hinten (groß)'))
-    p.extra.append(label(162, 284, '2× Lok vorne (klein)'))
-    pages.append(p)
-
-    p = Page('raeder-2', 'Räder (2/2), Radkappen, Kupplungen', '8 Waggon-Räder. Radkappen und Treibstangen sind optional (für mehr 3D-Effekt).')
-    for i in range(8):
-        cx = 26 + 44 * (i % 4)
-        cy = 48 + 44 * (i // 4)
-        p.add(part_wheel(cx, cy, WG_WHEEL_R))
-    for i in range(28):
-        cx = 18 + 17.5 * (i % 10)
-        cy = 128 + 17.5 * (i // 10)
-        p.add(part_hub(cx, cy, 7))
-    p.extra.append(label(105, 120, 'Radkappen (optional, 28 Stück)'))
+    # ---------------- Kleinteile
+    p = Page('kleinteile', 'Kupplungen und Treibstangen', 'Die Räder sind schon an Waggons und Lok angesetzt. Hier nur noch die Kleinteile (optional).')
     for i in range(6):
-        p.add(part_coupling(14 + 64 * (i % 3), 196 + 26 * (i // 3)))
-    p.extra.append(label(105, 190, 'Kupplungen – längs falten und zwischen die Waggons kleben (6 Stück)'))
+        p.add(part_coupling(14 + 64 * (i % 3), 56 + 26 * (i // 3)))
+    p.extra.append(label(105, 48, 'Kupplungen – längs falten und zwischen die Waggons kleben (6 Stück)'))
     for i in range(2):
-        p.add(part_rod(12 + 96 * i, 262, w=94))
-    p.extra.append(label(105, 255, 'Treibstangen für die Lok (optional)'))
+        p.add(part_rod(12 + 96 * i, 128, w=94))
+    p.extra.append(label(105, 121, 'Treibstangen für die Lok – von Rad zu Rad kleben'))
     pages.append(p)
 
     # ---------------- Waggons
@@ -173,18 +153,11 @@ def build_pages():
         p.add(part_wagon_b(W, 10, 52))
         pages.append(p)
 
-        nums = list(range(4 * n - 3, 4 * n + 1))
-        p = Page('waggon-%d-kaestchen' % n, 'Kästchen %d–%d · Unterteile' % (nums[0], nums[-1]),
-                 'Zwei Unterteile pro Blatt – für Waggon %d dieses Blatt 2× drucken.' % n, copies=2)
-        p.add(part_box_bottom(W, 17.5, 42))
-        p.add(part_box_bottom(W, 17.5 + 175, 42, rotated=True))
-        pages.append(p)
-
-        p = Page('waggon-%d-deckel' % n, 'Kästchen %d–%d · Deckel' % (nums[0], nums[-1]),
-                 'Ränder nach unten falten, Eck-Laschen innen festkleben.')
-        for i, num in enumerate(nums):
-            p.add(part_lid(W, num, 8 + 100 * (i % 2), 48 + 100 * (i // 2)))
-        pages.append(p)
+        for num in range(4 * n - 3, 4 * n + 1):
+            p = Page('kaestchen-%02d' % num, 'Kästchen %d · Waggon %d' % (num, n),
+                     'Ein Teil mit Klappdeckel: Wände zum Ring, Boden einkleben, Deckel mit Zunge schließen.')
+            p.add(part_box(W, num, 16, 47))
+            pages.append(p)
     return pages
 
 

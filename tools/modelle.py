@@ -1,14 +1,13 @@
 """3D-Modelle von Kaestchen, Waggon und Lok fuer die Anleitungsbilder (Masse wie Vorlagen)."""
 from iso import *
 from zug import (WAGONS, LOCO, WOOD, WOOD2, WOODD, TAB, CREAM, CREAM2, BOILER_R, CHIM_R, CAB_A, CAB_B, CAB_H,
-                 CAB_ROOF, CH_L, CH_W, CH_H, WG, WG_H, WG_LOW, WG_WHEEL_R, LOCO_REAR_R, LOCO_FRONT_R,
-                 wagon_side, wagon_endflap, wagon_endwall, box_wall, lid_top, lid_wall, wheel_decor,
+                 CAB_ROOF, CH_L, CH_W, CH_H, WG, WG_H, WG_LOW, WG_WHEEL_R, WG_WHEELS, LOCO_REAR_R, LOCO_FRONT_R,
+                 wagon_side, wagon_endflap, wagon_endwall, box_wall, lid_top, wheel_decor,
                  chassis_side, chassis_front, chassis_back, chassis_top, cab_side, cab_front, cab_back, cab_roof,
                  boiler_disc, cloud_shape, cloud_decor, mix, chimney_profile)
 
 Z0 = 8.0          # Bodenhoehe ueber dem Tisch (Raeder ragen 8 mm unter)
 BOX_O = 56.0      # Unterteil aussen
-LID_O = 58.6      # Deckel aussen
 BOX_HT = 56.0
 
 
@@ -19,17 +18,31 @@ def box_bottom(W, x, y, z, open_top=True):
     return cuboid(x, y, z, BOX_O, BOX_O, BOX_HT, base, d, skip=('top',) if open_top else ())
 
 
-def lid(W, num, x, y, z, upside_down=False):
-    d = dict(front=lid_wall(W, num), back=lid_wall(W, num), left=lid_wall(W, num), right=lid_wall(W, num),
-             top=lid_top(W, num))
-    faces = cuboid(x, y, z, LID_O, LID_O, 18, W['c'], d, skip=('bottom',),
-                   cols=dict(top=mix(W['c'], '#FFFFFF', 0.25)))
-    return faces
-
-
 def box_closed(W, num, x, y, z):
-    off = (LID_O - BOX_O) / 2
-    return [box_bottom(W, x + off, y + off, z), lid(W, num, x, y, z + BOX_HT + 0.6 - 18)]
+    deco, base = box_wall(W)
+    d = dict(front=deco, back=deco, left=deco, right=deco, top=lid_top(W, num))
+    return [cuboid(x, y, z, BOX_O, BOX_O, BOX_HT, base, d, cols=dict(top=mix(W['c'], '#FFFFFF', 0.25)))]
+
+
+def box_lid_open(W, num, ang=105, tuck=True):
+    """Kaestchen mit aufgeklapptem Deckel (Scharnier an der Rueckwand)."""
+    s = BOX_O
+    lidc = mix(W['c'], '#FFFFFF', 0.25)
+    walls = box_bottom(W, 0, 0, 0)
+    top = quad((0, s, s), (s, 0, 0), (0, -s, 0), lidc, lid_top(W, num), back=lidc)
+    parts = [top]
+    if tuck:
+        parts.append(quad((0, 0, s), (s, 0, 0), (0, 0, -12), lidc, back=lidc))
+    parts = rotate(parts, (0, s, s), (1, 0, 0), -ang)
+    dust = []
+    for x, nx in ((0, -1), (s, 1)):
+        dust.append(Face([(x, s, s), (x, 0, s), (x, 3, s + 12), (x, s - 16, s + 12)],
+                         base_col(W), normal=(nx, 0, 0), back=base_col(W)))
+    return [walls + dust, parts]
+
+
+def base_col(W):
+    return box_wall(W)[1]
 
 
 def box_folding(W):
@@ -87,12 +100,13 @@ def wagon_parts(W, ox=0.0):
 
 def wheels_wagon(ox, side, y_off=0.0):
     r = WG_WHEEL_R
-    zc = Z0 + 12
+    zc = r
+    x1, x2 = WG_WHEELS
     if side == 'near':
-        return [disc_y(ox + 28, -0.8 + y_off, zc, r, WOOD, wheel_decor(r)),
-                disc_y(ox + 92, -0.8 + y_off, zc, r, WOOD, wheel_decor(r))]
-    return [disc_y(ox + 28, WG + 0.8, zc, r, WOOD, wheel_decor(r), facing=1),
-            disc_y(ox + 92, WG + 0.8, zc, r, WOOD, wheel_decor(r), facing=1)]
+        return [disc_y(ox + x1, -0.8 + y_off, zc, r, WOOD, wheel_decor(r)),
+                disc_y(ox + x2, -0.8 + y_off, zc, r, WOOD, wheel_decor(r))]
+    return [disc_y(ox + x1, WG + 0.8, zc, r, WOOD, wheel_decor(r), facing=1),
+            disc_y(ox + x2, WG + 0.8, zc, r, WOOD, wheel_decor(r), facing=1)]
 
 
 def wagon_boxes(W, ox):
@@ -101,8 +115,8 @@ def wagon_boxes(W, ox):
     k = 0
     for j in range(2):
         for i in range(2):
-            x = ox + 1.2 + i * (LID_O + 0.4)
-            y = 1.2 + (1 - j) * (LID_O + 0.4)
+            x = ox + 3 + i * (BOX_O + 2)
+            y = 3 + (1 - j) * (BOX_O + 2)
             groups.append((x, y, nums[k]))
             k += 1
     return groups
@@ -139,7 +153,8 @@ def wagon_model(W, ox=0.0, boxes=True, wheels=True, B_lift=None, wheel_out=0.0):
 
 def wagon_A_only(W):
     A, B = wagon_parts(W)
-    return [[A['floor'], A['side_far'], A['flap_far']] + A['tabs'], [A['side_near'], A['flap_near']]]
+    return [wheels_wagon(0, 'far'), [A['floor'], A['side_far'], A['flap_far']] + A['tabs'],
+            [A['side_near'], A['flap_near']], wheels_wagon(0, 'near')]
 
 
 def wagon_B_only(W):
@@ -237,8 +252,7 @@ def loco_model(stage=5):
         b, extra = boiler(disc_off=30)
         return [b, extra], [((BOILER_X0 - 30 - 5, CH_W / 2, BOILER_ZC + 45), (BOILER_X0 - 4, CH_W / 2, BOILER_ZC + 40))]
     arrows = []
-    if stage >= 5:
-        g.append(loco_wheels('far'))
+    g.append(loco_wheels('far'))
     g.append(chassis(guides=stage <= 2))
     if stage >= 2:
         lift = 45 if stage == 2 else 0
@@ -255,6 +269,8 @@ def loco_model(stage=5):
     if stage >= 5:
         g.append([cloud()])
         g.append(loco_wheels('near'))
+    else:
+        g.append(loco_wheels('near', rods=False))
     return g, arrows
 
 
