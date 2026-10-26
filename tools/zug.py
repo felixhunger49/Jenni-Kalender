@@ -558,7 +558,7 @@ def chassis_top(w, h):
 
 def cab_side(w, h):
     o = ['<rect x="0" y="%s" width="%s" height="10" fill="%s"/>' % (f(h - 10), f(w), LOCO['d'])]
-    o.append(window_with_animal(w / 2, 10, 40, 40, 'fuchs', LOCO['scarf']))
+    o.append(window_with_animal(w / 2, 10, 40, 40, 'pinguin', LOCO['scarf']))
     o.append(tree(14, h - 13, 22, TREE, TREED, snow=True))
     o.append(gift(w - 15, h - 13, 12, PINK))
     for x, y, r in ((8, 8, 2.2), (w - 8, 8, 2.2), (w / 2, 62, 2.4), (6, 56, 1.6), (w - 6, 58, 1.6)):

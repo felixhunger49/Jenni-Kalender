@@ -1,6 +1,6 @@
 # Eisenbahn-Adventskalender
 
-Bastelvorlage für einen Adventskalender-Zug: eine Lok und 4 Waggons, oben offen und ohne Zwischenboden, in jedem Waggon 6 Kästchen mit den Zahlen 1–24. Tiere: Fuchs (Lok), Löwe, Bär, Giraffe, Elefant – sie schauen aus den Fenstern.
+Bastelvorlage für einen Adventskalender-Zug: eine Lok und 4 Waggons, oben offen und ohne Zwischenboden, in jedem Waggon 6 Kästchen mit den Zahlen 1–24. Tiere: Pinguin (Lok), Löwe, Bär, Giraffe, Elefant – sie schauen aus den Fenstern.
 
 ## Dateien
 

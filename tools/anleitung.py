@@ -177,9 +177,9 @@ def body(pages):
     cam = Cam(yaw=22, pitch=34)
     g, a = M.box_folding(W1)
     lx, ly = M.BOX_W, M.BOX_D
-    k_open = render(M.box_lid_open(W2, 7, 110), cam)
-    k_close = render(M.box_lid_open(W2, 7, 45), cam, arrows=[((lx / 2, ly + 25, 90 + 45), (lx / 2, 15, 90 + 12))])
-    filled = render(M.box_closed(W2, 7, 0, 0, 0), cam)
+    k_open = render(M.box_lid_open(W1, 1, 110), cam)
+    k_close = render(M.box_lid_open(W1, 1, 45), cam, arrows=[((lx / 2, ly + 25, 90 + 45), (lx / 2, 15, 90 + 12))])
+    filled = render(M.box_closed(W1, 1, 0, 0, 0), cam)
     add('''
 <div class="head"><h2>Teil 1 · Die 24 Kästchen</h2><span class="tag">ein Teil mit Klappdeckel – 6 pro Waggon</span></div>
 <div class="steps">%s%s%s%s%s%s</div>
@@ -199,7 +199,7 @@ def body(pages):
     cam = Cam(yaw=24, pitch=24)
     wA = render(M.wagon_A_only(W1), cam)
     wB = render(M.wagon_B_only(W1), cam)
-    wAB = render(M.wagon_model(W1, boxes=False, near_off=60), cam, arrows=[((60, -95, 40), (60, -22, 40))])
+    wAB = render(M.wagon_model(W1, boxes=False, near_off=60), cam, arrows=[((60, -105, 40), (60, -30, 40))])
     wDone = render(M.wagon_model(W1, boxes=False), cam)
     wFull = render(M.wagon_model(W1), cam)
     add('''
@@ -249,7 +249,7 @@ def body(pages):
 <div class="cols">
  <div class="box"><h3>Reihenfolge</h3>
   <table>
-   <tr><td>Lok</td><td>Fuchs</td></tr>
+   <tr><td>Lok</td><td>Pinguin</td></tr>
    %s
   </table></div>
  <div class="box"><h3>Kupplungen</h3>

@@ -53,23 +53,23 @@ def box_folding(W):
     """Waende stehen als Ring, Boden klappt noch auf."""
     d, base = _bdec(W)
     lx, ly = BOX_W, BOX_D
-    walls = cuboid(0, 0, 0, lx, ly, 38, base, d, skip=('top', 'bottom'))
+    walls = cuboid(0, 0, 0, lx, ly, BOX_H, base, d, skip=('top', 'bottom'))
     t = 7
     tabs = [Face([(0, 0, 0), (lx, 0, 0), (lx - 2, t, 0), (2, t, 0)], TAB, normal=(0, 0, 1), back=TAB),
             Face([(0, ly, 0), (0, 0, 0), (t, 2, 0), (t, ly - 2, 0)], TAB, normal=(0, 0, 1), back=TAB),
             Face([(lx, ly, 0), (0, ly, 0), (2, ly - t, 0), (lx - 2, ly - t, 0)], TAB, normal=(0, 0, 1), back=TAB)]
     base_face = quad((0, 0, 0), (lx, 0, 0), (0, ly, 0), mix(W['c'], '#FFFFFF', 0.6))
     base_face = rotate([base_face], (0, 0, 0), (1, 0, 0), -125)
-    return [walls + tabs, base_face], [((lx / 2, -40, -35), (lx / 2, -4, -6))]
+    return [walls + tabs, base_face], [((lx / 2, -45, -45), (lx / 2, -5, -8))]
 
 
-def box_ring_open(W):
-    """Drei Waende stehen, die vierte schwenkt mit der Lasche noch auf."""
+def box_ring_open(W, ang=60):
+    """Drei Waende stehen, die vierte (mit Klebelasche) schwenkt noch auf."""
     d, base = _bdec(W)
-    lx, ly = BOX_W, BOX_D
-    front, back, left, right = cuboid(0, 0, 0, lx, ly, 55, base, d, skip=('top', 'bottom'))
-    left = rotate([left], (0, ly, 0), (0, 0, 1), -55)[0]
-    tab = Face([(0, 0, 55), (0, 0, 0), (7, 2, 2), (7, 2, 53)], TAB, normal=(1, 0, 0), back=TAB)
+    lx, ly, h = BOX_W, BOX_D, BOX_H
+    front, back, left, right = cuboid(0, 0, 0, lx, ly, h, base, d, skip=('top', 'bottom'))
+    tab = Face([(0, 0, h), (0, 0, 0), (8, 0.2, 2), (8, 0.2, h - 2)], TAB, normal=(0, -1, 0), back=TAB)
+    left, tab = rotate([left, tab], (0, ly, 0), (0, 0, 1), -ang)
     return [[back, right, front, tab, left]]
 
 
@@ -84,6 +84,12 @@ def wagon_parts(W, ox=0.0):
         end_left=quad((ox, Wd, z0 + H), (0, -Wd, 0), (0, 0, -H), W['c'], wagon_endwall(W)),
         end_right=quad((ox + L, 0, z0 + H), (0, Wd, 0), (0, 0, -H), W['c'], wagon_endwall(W)),
     )
+    tabs = []
+    for x, d in ((ox, 1), (ox + L, -1)):
+        for y, inn in ((0.3, 1), (Wd - 0.3, 1)):
+            tabs.append(Face([(x, y, z0 + H - 2), (x, y, z0 + 2), (x + d * 10, y, z0 + 5), (x + d * 10, y, z0 + H - 5)],
+                             TAB, normal=(0, -1, 0), back=TAB))
+    P['tabs'] = tabs
     return P
 
 
@@ -91,8 +97,8 @@ def wheels_wagon(ox, side, y_off=0.0):
     r = WG_WHEEL_R
     x1, x2 = WG_WHEELS
     if side == 'near':
-        return [disc_y(ox + x1, -0.8 + y_off, r, r, WOOD, wheel_decor(r)),
-                disc_y(ox + x2, -0.8 + y_off, r, r, WOOD, wheel_decor(r))]
+        return [disc_y(ox + x1, -0.8 - y_off, r, r, WOOD, wheel_decor(r)),
+                disc_y(ox + x2, -0.8 - y_off, r, r, WOOD, wheel_decor(r))]
     return [disc_y(ox + x1, WG_W + 0.8, r, r, WOOD, wheel_decor(r), facing=1),
             disc_y(ox + x2, WG_W + 0.8, r, r, WOOD, wheel_decor(r), facing=1)]
 
@@ -119,12 +125,13 @@ def wagon_model(W, ox=0.0, boxes=True, wheels=True, near=True, near_off=0.0):
     g = []
     if wheels:
         g.append(wheels_wagon(ox, 'far'))
-    g.append([P['floor'], P['wall_far'], P['end_left'], P['end_right']])
+    g.append([P['floor'], P['wall_far'], P['end_right']] + ([] if near else P['tabs']))
     if boxes:
         bx, lx, ly = wagon_boxes(W, ox)
         bx.sort(key=lambda t: -cam.depth((t[0] + lx / 2, t[1] + ly / 2, 70)))
         for x, y, num in bx:
             g.extend(box_closed(W, num, x, y, Z0 + 0.4, lx, ly))
+    g.append([P['end_left']])
     if near:
         g.append(move([P['wall_near']], (0, -near_off, 0)))
         if wheels:
@@ -134,7 +141,7 @@ def wagon_model(W, ox=0.0, boxes=True, wheels=True, near=True, near_off=0.0):
 
 def wagon_A_only(W):
     P = wagon_parts(W)
-    return [wheels_wagon(0, 'far'), [P['floor'], P['wall_far'], P['end_left'], P['end_right']]]
+    return [wheels_wagon(0, 'far'), [P['floor'], P['wall_far'], P['end_right']] + P['tabs'], [P['end_left']]]
 
 
 def wagon_B_only(W):
