@@ -90,26 +90,26 @@ def body(pages):
   <div class="sub">Bastelvorlage &amp; Schritt-für-Schritt-Anleitung</div>
 </div>
 <div class="cover-fig">%s</div>
-<div class="chips"><span class="chip">24 Kästchen</span><span class="chip">6 Waggons</span><span class="chip">1 Lok</span></div>
+<div class="chips"><span class="chip">24 Kästchen</span><span class="chip">4 Waggons</span><span class="chip">1 Lok</span></div>
 <div class="cols">
  <div class="box"><h3>So ist der Zug gebaut</h3>
   <p>Jedes Teil ist möglichst <b>aus einem Stück gefaltet</b> und nur an Laschen geklebt. Auch die Räder sind direkt an Waggons und Lok angesetzt.</p>
   <ul>
    <li><b>Lok:</b> Fahrgestell mit Rädern, Führerhaus, Kessel (+ Deckel) und Schornstein</li>
-   <li><b>Waggon:</b> nur 2 Teile – Teil A (Boden + Wände mit Rädern) und Teil B (Zwischenboden mit Stirnwänden), oben offen</li>
-   <li><b>Kästchen:</b> ein Teil mit Klappdeckel und Zahl, 4 Stück pro Waggon</li>
+   <li><b>Waggon:</b> nur 2 Teile – Teil A (Boden, Stirnwände und eine lange Wand) und Teil B (die zweite lange Wand), oben offen, ohne Zwischenboden</li>
+   <li><b>Kästchen:</b> ein Teil mit Klappdeckel und Zahl, 6 Stück pro Waggon</li>
   </ul></div>
  <div class="box"><h3>Größen (fertig)</h3>
   <table>
-   <tr><td>Kästchen</td><td>5,5 × 5,5 × 5,5 cm innen</td></tr>
-   <tr><td>Waggon</td><td>12 × 12 cm, 8,8 cm hoch (mit Rädern)</td></tr>
-   <tr><td>Lok</td><td>19 × 9 cm, ca. 18 cm hoch mit Rauch</td></tr>
-   <tr><td>ganzer Zug</td><td>ca. 1 m lang</td></tr>
+   <tr><td>Kästchen</td><td>4,2 × 3,7 cm, 9 cm hoch (innen)</td></tr>
+   <tr><td>Waggon</td><td>12 × 9 cm Grundfläche, 8 cm Wände, 8,8 cm mit Rädern</td></tr>
+   <tr><td>Lok</td><td>18 × 9 cm, ca. 19 cm hoch mit Rauch</td></tr>
+   <tr><td>ganzer Zug</td><td>ca. 75 cm lang</td></tr>
   </table>
-  <p style="margin-top:2mm">Die Kästchen stehen im Waggon auf einem Zwischenboden und schauen oben gut 1 cm heraus – so lassen sie sich leicht herausnehmen.</p></div>
+  <p style="margin-top:2mm">Die 6 Kästchen (2 × 3) stehen direkt auf dem Waggonboden und schauen oben gut 1 cm heraus – so lassen sie sich leicht herausnehmen.</p></div>
  <div class="box wide"><h3>Was du bekommst</h3>
   <table>
-   <tr><td><b>Vorlagen (PDF)</b></td><td>%d farbige Druckvorlagen in Originalgröße: Lok, 6 Waggons, 24 Kästchen mit Zahlen 1–24</td></tr>
+   <tr><td><b>Vorlagen (PDF)</b></td><td>%d farbige Druckvorlagen in Originalgröße: Lok, 4 Waggons, 24 Kästchen mit Zahlen 1–24</td></tr>
    <tr><td><b>Anleitung (PDF)</b></td><td>dieses Heft mit Material, Drucktipps und bebilderten Bauschritten</td></tr>
    <tr><td><b>SVG – Druck</b></td><td>jede Vorlage einzeln, mit Ebenen „Druck“, „Schneiden“, „Falzen“</td></tr>
    <tr><td><b>SVG – Plotter</b></td><td>nur Schnitt- (rot) und Rilllinien (blau) für Cricut, Silhouette &amp; Co.</td></tr>
@@ -176,45 +176,44 @@ def body(pages):
     # ------------------------------------------------ Kaestchen
     cam = Cam(yaw=22, pitch=34)
     g, a = M.box_folding(W1)
-    s = M.BOX_O
-    k_open = render(M.box_lid_open(W2, 5, 110), cam)
-    k_close = render(M.box_lid_open(W2, 5, 45), cam, arrows=[((s / 2, s + 25, s + 45), (s / 2, 15, s + 12))])
-    filled = render(M.box_closed(W2, 5, 0, 0, 0), cam)
+    lx, ly = M.BOX_W, M.BOX_D
+    k_open = render(M.box_lid_open(W2, 7, 110), cam)
+    k_close = render(M.box_lid_open(W2, 7, 45), cam, arrows=[((lx / 2, ly + 25, 90 + 45), (lx / 2, 15, 90 + 12))])
+    filled = render(M.box_closed(W2, 7, 0, 0, 0), cam)
     add('''
-<div class="head"><h2>Teil 1 · Die 24 Kästchen</h2><span class="tag">ein Teil mit Klappdeckel – 4 pro Waggon</span></div>
+<div class="head"><h2>Teil 1 · Die 24 Kästchen</h2><span class="tag">ein Teil mit Klappdeckel – 6 pro Waggon</span></div>
 <div class="steps">%s%s%s%s%s%s</div>
 ''' % (
         step(1, 'Ausschneiden', 'Jedes Kästchen ist ein einziges Teil: vier Wände, Boden, Deckel mit Zahl und Einsteckzunge. Entlang der durchgezogenen Linien ausschneiden, auch die kleine Griffmulde an der Vorderwand.',
              '<div class="thumbs"><div class="thumb">%s</div></div>' % thumb([part_box(W1, 1, 0, 0)])),
-        step(2, 'Rillen und Ring kleben', 'Alle gestrichelten Linien rillen und vorfalten. Die vier Wände zu einem Ring biegen und die Lasche oben innen an die letzte Wand kleben.',
+        step(2, 'Rillen und Ring kleben', 'Alle gestrichelten Linien rillen und vorfalten. Die vier Wände zu einem Ring biegen und die Lasche am Ende innen an die erste Wand kleben.',
              render(M.box_ring_open(W1), cam)),
         step(3, 'Boden schließen', 'Die drei kleinen Bodenlaschen nach innen knicken und Kleber darauf geben. Den Boden hochklappen und von innen mit einem Stift andrücken.',
              render(g, cam, arrows=a)),
         step(4, 'Deckel vorbereiten', 'Der Deckel hängt an der Rückwand. Die zwei seitlichen Staubklappen nach innen knicken (nicht kleben), die Einsteckzunge vorne am Deckel vorfalten.', k_open),
         step(5, 'Befüllen und schließen', 'Kleine Überraschung hinein, Deckel zuklappen und die Zunge innen hinter die Vorderwand stecken. Zum Öffnen an der Griffmulde ziehen.', k_close),
-        step(6, 'Fertig', 'Die Zahl auf dem Deckel zeigt den Tag. Die Kästchen 1–4 gehören in Waggon 1, 5–8 in Waggon 2 usw. Weil nichts geklebt wird, lässt sich jedes Kästchen immer wieder befüllen.', filled),
+        step(6, 'Fertig', 'Die Zahl auf dem Deckel zeigt den Tag. Die Kästchen 1–6 gehören in Waggon 1, 7–12 in Waggon 2 usw. Weil nichts geklebt wird, lässt sich jedes Kästchen immer wieder befüllen.', filled),
     ))
 
     # ------------------------------------------------ Waggons
     cam = Cam(yaw=24, pitch=24)
     wA = render(M.wagon_A_only(W1), cam)
     wB = render(M.wagon_B_only(W1), cam)
-    wAB = render(M.wagon_model(W1, boxes=False, wheels=False, B_lift=125), cam,
-                 arrows=[((-30, 60, 215), (-30, 60, 105))])
+    wAB = render(M.wagon_model(W1, boxes=False, near_off=60), cam, arrows=[((60, -95, 40), (60, -22, 40))])
     wDone = render(M.wagon_model(W1, boxes=False), cam)
     wFull = render(M.wagon_model(W1), cam)
     add('''
-<div class="head"><h2>Teil 2 · Die 6 Waggons</h2><span class="tag">je 2 Teile, Räder angesetzt, oben offen für 4 Kästchen</span></div>
+<div class="head"><h2>Teil 2 · Die 4 Waggons</h2><span class="tag">je 2 Teile, Räder angesetzt, oben offen für 6 Kästchen</span></div>
 <div class="steps">%s%s%s%s%s%s</div>
 ''' % (
-        step(1, 'Ausschneiden und rillen', 'Teil A (Seitenwände mit Tierfenster und Rädern + Boden) und Teil B (Zwischenboden mit Stirnwänden) ausschneiden. Die Räder ragen in den Boden hinein: einfach mit ausschneiden, die kleinen Kerben im Boden sind richtig so. Alle gestrichelten Linien rillen.',
-             '<div class="thumbs"><div class="thumb">%s</div><div class="thumb">%s</div></div>' % (
+        step(1, 'Ausschneiden und rillen', 'Teil A (Boden, zwei Stirnwände, eine lange Wand mit Fenster und Rädern) und Teil B (die zweite lange Wand) ausschneiden, Räder mit ausschneiden. Im Boden entstehen dadurch zwei kleine Kerben, die sind richtig so. Alle gestrichelten Linien rillen.',
+             '<div class="thumbs"><div class="thumb">%s</div><div class="thumb" style="flex:0.55">%s</div></div>' % (
                  thumb([part_wagon_a(W1, 0, 0)]), thumb([part_wagon_b(W1, 0, 0)]))),
-        step(2, 'Teil A falten', 'Die zwei hohen Seitenwände und die zwei niedrigen Stirnklappen nach oben falten. Die Laschen der Seitenwände nach innen knicken und nur unten an die Stirnklappen kleben.', wA),
-        step(3, 'Teil B falten', '<b>Achtung, hier anders:</b> Die bedruckten Stirnwände nach oben falten (Druck außen), die hellen Stützen nach unten. So entsteht ein kleiner „Tisch“ mit hohen Enden.', wB),
-        step(4, 'Teil B einsetzen', 'Kleber auf die Außenseite der Stützen und auf die oberen Laschen-Enden. Teil B von oben in Teil A schieben: Die Stirnwände von B liegen außen über den Laschen und stehen genau auf den Stirnklappen.', wAB),
-        step(5, 'Waggon fertig', 'Die Räder an den Seitenwänden ragen unten 8 mm über, der Waggon steht auf seinen Rädern. Tipp: Für mehr Halt die Räder von innen mit einem Streifen Karton verstärken.', wDone),
-        step(6, 'Kästchen einsetzen', 'Vier Kästchen (2 × 2) auf den Zwischenboden stellen. Die Deckel schauen oben gut 1 cm heraus, so lassen sich die Kästchen leicht herausnehmen.', wFull),
+        step(2, 'Teil A falten', 'Die beiden Stirnwände und die lange Wand nach oben falten, der Boden bleibt flach. Die Laschen oben an den Stirnwänden innen an die lange Wand kleben.', wA),
+        step(3, 'Teil B vorbereiten', 'Die Bodenlaschen unten an Teil B nach innen knicken. Teil B ist dann die zweite lange Wand, ebenfalls mit Fenster, Tier und Rädern.', wB),
+        step(4, 'Teil B ankleben', 'Die unteren Laschen der Stirnwände und die Bodenlaschen von Teil B mit Kleber versehen. Teil B von der offenen Seite her ansetzen: Seine Enden liegen innen an den Stirnwand-Laschen, die Bodenlaschen auf dem Boden.', wAB),
+        step(5, 'Waggon fertig', 'Alle vier Wände sind gleich hoch (8 cm). Die Räder ragen unten 8 mm über, der Waggon steht auf seinen Rädern. Tipp: Für mehr Halt die Räder von innen mit einem Streifen Karton verstärken.', wDone),
+        step(6, 'Kästchen einsetzen', 'Sechs Kästchen (2 nebeneinander, 3 hintereinander) direkt auf den Boden stellen. Die Kästchen sind 9 cm hoch und schauen oben gut 1 cm heraus, so lassen sie sich leicht herausnehmen.', wFull),
     ))
 
     # ------------------------------------------------ Lok
@@ -254,7 +253,7 @@ def body(pages):
    %s
   </table></div>
  <div class="box"><h3>Kupplungen</h3>
-  <p>Die braunen Streifen längs falten. Jeweils ein Ende 1 cm unter den Boden eines Waggons kleben, das andere unter den nächsten – Abstand ca. 2 cm.</p>
+  <p>Die braunen Streifen längs falten. Jeweils ein Ende 1 cm unter den Boden eines Waggons (oder der Lok) kleben, das andere unter den nächsten – Abstand ca. 2 cm.</p>
   <p>Wenn der Zug nach Weihnachten verstaut werden soll: Kupplung nur an einer Seite festkleben und auf der anderen Seite lose unterschieben.</p></div>
  <div class="box"><h3>Ideen zum Befüllen</h3><ul>
   <li>kleine Schokoladen, Nüsse, Lebkuchenherzen</li>
@@ -269,5 +268,5 @@ def body(pages):
  </ul></div>
 </div>
 ''' % (train, ''.join('<tr><td>Waggon %d</td><td>%s</td><td>Kästchen %d–%d</td></tr>' % (
-        W['n'], W['name'], 4 * W['n'] - 3, 4 * W['n']) for W in WAGONS)))
+        W['n'], W['name'], 6 * W['n'] - 5, 6 * W['n']) for W in WAGONS)))
     return '\n'.join(out)

@@ -31,10 +31,8 @@ WHITE = '#FFFFFF'
 WAGONS = [
     dict(n=1, animal='loewe', name='Löwe', c='#B7C3A5', d='#8C9B79', acc='#EAD3B5', scarf='#C98E6E'),
     dict(n=2, animal='baer', name='Bär', c='#E6C0B4', d='#C39386', acc='#F5E4DA', scarf='#9DB3C2'),
-    dict(n=3, animal='hase', name='Hase', c='#E8DBC5', d='#C1AB89', acc='#F6EEE1', scarf='#B7C3A5'),
+    dict(n=3, animal='giraffe', name='Giraffe', c='#E8DBC5', d='#C1AB89', acc='#F6EEE1', scarf='#B7C3A5'),
     dict(n=4, animal='elefant', name='Elefant', c='#BCCDD9', d='#8CA3B4', acc='#E6EDF2', scarf='#E2A69A'),
-    dict(n=5, animal='otter', name='Otter', c='#C3CCA8', d='#96A17A', acc='#EDEFE0', scarf='#D9B48A'),
-    dict(n=6, animal='giraffe', name='Giraffe', c='#EFE0C9', d='#D1B38E', acc='#F1D3CB', scarf='#B5C7D3'),
 ]
 LOCO = dict(c='#B7C3A5', d='#8C9B79', boiler='#E8C4BA', boilerd='#C49A8E', cream='#F3EADB',
             scarf='#9DB3C2')
@@ -43,14 +41,14 @@ FONT_HAND = "'Patrick Hand', 'Hand', 'Comic Sans MS', cursive"
 FONT_TXT = "'Nunito', 'Liberation Sans', Arial, sans-serif"
 
 # ---------------------------------------------------------------- Masse
-BOX = 55.0          # Kaestchen innen (Kantenlaenge)
+BOX_W = 42.0        # Kaestchen innen, Breite (quer im Waggon)
+BOX_D = 37.0        # Kaestchen innen, Tiefe (laengs im Waggon)
+BOX_H = 90.0        # Kaestchen innen, Hoehe
 BOX_TAB = 8.0
-LID = 57.0          # Deckel innen
-LID_H = 18.0        # Deckelrand
-WG = 120.0          # Waggon innen (Laenge = Breite)
-WG_H = 80.0         # Waggon Wandhoehe
-WG_LOW = 35.0       # Hoehe Zwischenboden (Stirnklappe Teil A)
-WG_B = 119.0        # Teil B (etwas kleiner, passt in Teil A)
+WG_L = 120.0        # Waggon Laenge (Grundflaeche 9 x 12 cm)
+WG_W = 90.0         # Waggon Breite
+WG = WG_L
+WG_H = 80.0         # Wandhoehe, alle vier Waende gleich
 WG_WHEEL_R = 17.0
 WG_WHEELS = (26.0, 94.0)
 WHEEL_DROP = 8.0    # so weit ragen alle Raeder unter den Boden
@@ -322,56 +320,68 @@ _img_cache = {}
 
 
 def animal_image(kind):
-    """Eigenes Tierbild (freigestellt) als (data-URI, Breite/Hoehe), falls tiere/<kind>*.png|jpg existiert."""
+    """Freigestelltes Tierbild tiere/<kind>*.png|jpg -> (data-URI, Breite/Hoehe, Maske) oder None."""
     if kind in _img_cache:
         return _img_cache[kind]
     res = None
     files = sorted(glob.glob(os.path.join(TIER_DIR, '*%s*.png' % kind)) + glob.glob(os.path.join(TIER_DIR, '*%s*.jp*g' % kind)))
     if files:
         path = files[-1]
-        try:
-            from PIL import Image
-            im = Image.open(path).convert('RGBA')
-            im.thumbnail((480, 480))
-            buf = io.BytesIO()
-            im.save(buf, 'PNG', optimize=True)
-            res = ('data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode(), im.size[0] / im.size[1])
-        except ImportError:
-            mime = 'image/png' if path.endswith('.png') else 'image/jpeg'
-            res = ('data:%s;base64,%s' % (mime, base64.b64encode(open(path, 'rb').read()).decode()), 1.0)
+        from PIL import Image
+        import numpy as np
+        im = Image.open(path).convert('RGBA')
+        im.thumbnail((480, 480))
+        buf = io.BytesIO()
+        im.save(buf, 'PNG', optimize=True)
+        mask = np.asarray(im.split()[3].resize((96, 96), Image.BILINEAR)) > 60
+        res = ('data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode(), im.size[0] / im.size[1], mask)
     _img_cache[kind] = res
     return res
 
 
+def _fit_animal(img, cx, top, w, h, m=1.8, paw_over=4.2):
+    """Groesstes Mass (Hoehe in mm), bei dem das Tier ganz im Fensterbogen liegt.
+    Unterkante = Fensterunterkante + paw_over, die Pfoten ragen also leicht ueber die Fensterbank."""
+    import numpy as np
+    uri, aspect, mask = img
+    r = w / 2
+    y_p = top + h + paw_over
+    ys, xs = np.nonzero(mask)
+    fx = (xs + 0.5) / mask.shape[1]
+    fy = (ys + 0.5) / mask.shape[0]
+    hh = y_p - (top + m)
+    while hh > 10:
+        ww = hh * aspect
+        px = cx - ww / 2 + fx * ww
+        py = y_p - hh + fy * hh
+        lower = py >= top + r
+        ok = np.where(lower, np.abs(px - cx) <= r - m,
+                      (px - cx) ** 2 + (py - (top + r)) ** 2 <= (r - m) ** 2)
+        if ok.all() and py.min() >= top + m:
+            return ww, hh, y_p
+        hh -= 0.25
+    return hh * aspect, hh, y_p
+
+
 def window_with_animal(cx, top, w, h, kind, scarf, frame=CREAM2, inner='#F8F1E6'):
+    """Fenster mit Fensterbank; das Tier schaut heraus, die Pfoten liegen leicht ueber der Bank."""
     cid = clip_uid()
     p = arch_path(cx, top, w, h)
     img = animal_image(kind)
+    sill = '<rect x="%s" y="%s" width="%s" height="4.5" rx="2" fill="%s"/>' % (f(cx - (w + 8) / 2), f(top + h - 1), f(w + 8), frame)
+    stroke = '<path d="%s" fill="none" stroke="%s" stroke-width="%s"/>' % (p, frame, f(w * 0.06))
     if img:
-        # Tier schaut aus dem Fenster: Pfoten liegen auf der Fensterbank (wird danach darueber gezeichnet)
-        uri, aspect = img
-        hmax, wmax = h + 1.5, w * 0.98
-        ih = min(hmax, wmax / aspect)
-        iw = ih * aspect
-        bottom = top + h + 2.5
+        ww, hh, y_p = _fit_animal(img, cx, top, w, h)
         return ''.join([
-            '<path d="%s" fill="%s"/>' % (p, inner),
-            '<path d="%s" fill="%s" opacity="0.35" clip-path="url(#%s)"/>' % (p, mix(inner, WOOD2, 0.4), cid),
-            '<clipPath id="%s"><rect x="%s" y="%s" width="%s" height="%s"/></clipPath>' % (
-                cid, f(cx - w), f(top + h * 0.7), f(2 * w), f(h)),
-            '<path d="%s" fill="none" stroke="%s" stroke-width="%s"/>' % (p, frame, f(w * 0.06)),
-            '<image href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMax meet"/>' % (
-                uri, f(cx - iw / 2), f(bottom - ih), f(iw), f(ih)),
-        ])
+            '<path d="%s" fill="%s"/>' % (p, inner), stroke, sill,
+            '<image href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="none"/>' % (
+                img[0], f(cx - ww / 2), f(y_p - hh), f(ww), f(hh))])
     return ''.join([
         '<clipPath id="%s"><path d="%s"/></clipPath>' % (cid, p),
         '<path d="%s" fill="%s"/>' % (p, inner),
         '<g clip-path="url(#%s)">' % cid,
-        '<rect x="%s" y="%s" width="%s" height="%s" fill="%s" opacity="0.5"/>' % (f(cx - w / 2), f(top + h * 0.72), f(w), f(h), mix(inner, WOOD2, 0.25)),
         animal_at(kind, cx, top + h * 0.5, w * 0.55, scarf),
-        '</g>',
-        '<path d="%s" fill="none" stroke="%s" stroke-width="%s"/>' % (p, frame, f(w * 0.06)),
-    ])
+        '</g>', stroke, sill])
 
 
 def wheel_art(cx, cy, r):
@@ -396,7 +406,6 @@ def wagon_side(W, guides=True):
                         (27, 38, 1.6), (93, 38, 1.6)):
             o.append(star(x, y, r, STAR if r > 1.8 else CREAM2))
         o.append(window_with_animal(60, 5, 50, 42, W['animal'], W['scarf']))
-        o.append('<rect x="31" y="46" width="58" height="4.5" rx="2" fill="%s"/>' % CREAM2)
         o.append(bunting(34, 86, 50.5, 7, [W['d'], CREAM2, PINK], 4))
         o.append(gift(60, 66, 9, PINK if W['n'] != 2 else W['acc']))
         for x in WG_WHEELS:
@@ -405,27 +414,20 @@ def wagon_side(W, guides=True):
     return d
 
 
-def wagon_endflap(W):
+def wagon_endwall(W):
     def d(w, h):
-        o = ['<rect x="0" y="%s" width="%s" height="12" fill="%s"/>' % (f(h - 12), f(w), W['d']),
+        o = [bunting(6, w - 6, 3, 9, [W['d'], CREAM2, PINK, STAR], 6),
+             '<rect x="0" y="%s" width="%s" height="12" fill="%s"/>' % (f(h - 12), f(w), W['d']),
              '<rect x="0" y="%s" width="%s" height="1" fill="%s" opacity="0.8"/>' % (f(h - 13), f(w), CREAM2),
              '<rect x="%s" y="%s" width="16" height="7" rx="1.5" fill="%s"/>' % (f(w / 2 - 8), f(h - 10), WOODD),
              dot(w / 2, h - 6.5, 1.6, WOOD2)]
-        for x in (14, 34, 86, 106):
-            o.append(star(x, 9, 2.2, STAR))
-        o.append(heart(w / 2, 10, 6, PINK))
-        return ''.join(o)
-    return d
-
-
-def wagon_endwall(W):
-    def d(w, h):
-        o = [bunting(6, w - 6, 3, 11, [W['d'], CREAM2, PINK, STAR], 6)]
-        o.append(tree(22, h - 4, 26, mix(TREE, W['d'], 0.3), TREED, snow=True))
-        o.append(tree(w - 22, h - 4, 26, mix(TREE, W['d'], 0.3), TREED, snow=True))
-        o.append('<circle cx="%s" cy="%s" r="13" fill="%s"/>' % (f(w / 2), f(h / 2 + 4), CREAM2))
-        o.append(text(w / 2, h / 2 + 10.5, str(W['n']), 17, W['d'], font=FONT_HAND))
-        for x, y in ((42, 20), (78, 20), (40, 38), (80, 38)):
+        for x in range(6, int(w), 12):
+            o.append(dot(x, h - 3, 0.7, mix(W['d'], '#000000', 0.25)))
+        o.append(tree(18, h - 14, 24, mix(TREE, W['d'], 0.3), TREED, snow=True))
+        o.append(tree(w - 18, h - 14, 24, mix(TREE, W['d'], 0.3), TREED, snow=True))
+        o.append('<circle cx="%s" cy="%s" r="13" fill="%s"/>' % (f(w / 2), f(36), CREAM2))
+        o.append(text(w / 2, 42.5, str(W['n']), 17, W['d'], font=FONT_HAND))
+        for x, y in ((w * 0.3, 18), (w * 0.7, 18), (w * 0.27, 40), (w * 0.73, 40)):
             o.append(star(x, y, 1.8, STAR))
         return ''.join(o)
     return d
@@ -472,25 +474,26 @@ def box_wall(W):
     base = mix(W['c'], WHITE, 0.45)
 
     def d(w, h):
-        o = []
-        o.append(tree(w * 0.78, h - 6, 20, mix(TREE, W['d'], 0.3), TREED))
-        for x, y, r in ((10, 12, 2.4), (24, 30, 1.8), (12, 42, 1.6), (36, 14, 1.6), (44, 26, 2.2)):
-            o.append(star(x, y, r, STAR if r > 2 else W['d']))
-        o.append(sprig(12, h - 10, 9, mix(TREE, W['d'], 0.3), -20))
+        o = [tree(w * 0.5, h - 10, 34, mix(TREE, W['d'], 0.3), TREED)]
+        for fx, fy, r in ((0.2, 0.14, 2.4), (0.8, 0.24, 1.8), (0.22, 0.42, 1.6), (0.8, 0.52, 2.2), (0.18, 0.66, 1.8)):
+            o.append(star(w * fx, h * fy, r, STAR if r > 2 else W['d']))
+        o.append(sprig(w * 0.2, h - 14, 9, mix(TREE, W['d'], 0.3), -20))
+        o.append(sprig(w * 0.82, h - 16, 8, mix(TREE, W['d'], 0.3), 20))
         return ''.join(o)
     return d, base
 
 
 def lid_top(W, num):
     def d(w, h):
-        o = ['<rect x="4" y="4" width="%s" height="%s" rx="4" fill="%s"/>' % (f(w - 8), f(h - 8), CREAM2),
-             '<rect x="6" y="6" width="%s" height="%s" rx="3" fill="none" stroke="%s" stroke-width="0.6" stroke-dasharray="1.6,1.2"/>' % (
-                 f(w - 12), f(h - 12), W['d']),
-             text(w / 2, h / 2 + 11, str(num), 32, INK, font=FONT_HAND)]
-        o.append(sprig(11, 11, 8, mix(TREE, W['d'], 0.3), 40))
-        o.append(sprig(w - 11, h - 11, 8, mix(TREE, W['d'], 0.3), 220))
-        o.append(star(w - 11, 11, 2.4))
-        o.append(star(11, h - 11, 2.4))
+        size = min(w, h) * 0.66
+        o = ['<rect x="2.5" y="2.5" width="%s" height="%s" rx="3" fill="%s"/>' % (f(w - 5), f(h - 5), CREAM2),
+             '<rect x="4" y="4" width="%s" height="%s" rx="2" fill="none" stroke="%s" stroke-width="0.5" stroke-dasharray="1.4,1"/>' % (
+                 f(w - 8), f(h - 8), W['d']),
+             text(w / 2, h / 2 + size * 0.34, str(num), size, INK, font=FONT_HAND)]
+        o.append(sprig(8, 8, 6, mix(TREE, W['d'], 0.3), 40))
+        o.append(sprig(w - 8, h - 8, 6, mix(TREE, W['d'], 0.3), 220))
+        o.append(star(w - 8, 8, 1.8))
+        o.append(star(8, h - 8, 1.8))
         return ''.join(o)
     return d
 
@@ -556,7 +559,6 @@ def chassis_top(w, h):
 def cab_side(w, h):
     o = ['<rect x="0" y="%s" width="%s" height="10" fill="%s"/>' % (f(h - 10), f(w), LOCO['d'])]
     o.append(window_with_animal(w / 2, 10, 40, 40, 'fuchs', LOCO['scarf']))
-    o.append('<rect x="%s" y="49" width="46" height="4.5" rx="2" fill="%s"/>' % (f(w / 2 - 23), CREAM2))
     o.append(tree(14, h - 13, 22, TREE, TREED, snow=True))
     o.append(gift(w - 15, h - 13, 12, PINK))
     for x, y, r in ((8, 8, 2.2), (w - 8, 8, 2.2), (w / 2, 62, 2.4), (6, 56, 1.6), (w - 6, 58, 1.6)):
@@ -868,126 +870,79 @@ class Part:
 
 # ---------------------------------------------------------------- Konkrete Teile
 BOX_TUCK = 13.0
-BOX_DUST = 12.0
+BOX_DUST = 11.0
 
 
 def part_box(W, num, ox, oy):
-    """Kaestchen mit angesetztem Klappdeckel (ein Teil). Waende senkrecht gestapelt,
-    Rand links, Boden rechts. Breite 178, Hoehe 228 (inkl. Schlusslasche oben)."""
+    """Kaestchen mit angesetztem Klappdeckel (ein Teil), Innenmasse BOX_W x BOX_D x BOX_H.
+    Wandstreifen waagerecht: Vorderwand, Seite, Rueckwand, Seite (+ Klebelasche).
+    Deckel haengt an der Rueckwand, Boden an der Vorderwand. Breite 166, Hoehe 177 + Laschen."""
     P = Part('Kästchen %d' % num)
-    s, t = BOX, BOX_TAB
+    bw, bd, bh = BOX_W, BOX_D, BOX_H
     deco, base = box_wall(W)
-    wx = ox + BOX_TUCK + s
-    for k in range(4):
-        y = oy + k * s
-        if k == 3:
-            # Vorderwand mit Griffmulde am Rand
-            g = 7.0
-            pts = [(wx, y), (wx + s, y), (wx + s, y + s), (wx, y + s)]
-            arc = [(wx + g * math.sin(math.pi * i / 16), y + s / 2 + g * math.cos(math.pi * i / 16)) for i in range(17)]
-            P.polys.append(dict(pts=pts + arc, fill=base, decor=deco, frame=P.frame(wx, y, s, s, 270), tab=False))
-        else:
-            P.rect(wx, y, s, s, base, deco, orient=270)
     lidc = mix(W['c'], WHITE, 0.25)
-    P.rect(ox + BOX_TUCK, oy + s, s, s, lidc, lid_top(W, num), orient=90)
-    # Einsteckzunge
-    P.polys.append(dict(pts=[(ox + BOX_TUCK, oy + s), (ox + BOX_TUCK, oy + 2 * s), (ox + 1, oy + 2 * s - 6), (ox + 1, oy + s + 6)],
+    yt = oy + BOX_TUCK + bd            # Oberkante der Waende
+    xa = ox
+    xb, xc, xd = xa + bw, xa + bw + bd, xa + 2 * bw + bd
+    xe = xd + bd
+    # Vorderwand mit Griffmulde
+    cx, g = xa + bw / 2, 7.0
+    arc = [(cx - g * math.cos(math.pi * i / 16), yt + g * math.sin(math.pi * i / 16)) for i in range(17)]
+    P.polys.append(dict(pts=[(xa, yt)] + arc + [(xa + bw, yt), (xa + bw, yt + bh), (xa, yt + bh)],
+                        fill=base, decor=deco, frame=P.frame(xa, yt, bw, bh, 0), tab=False))
+    P.rect(xb, yt, bd, bh, base, deco)
+    P.rect(xc, yt, bw, bh, base, deco)
+    P.rect(xd, yt, bd, bh, base, deco)
+    # Deckel an der Rueckwand, Zunge oben
+    P.rect(xc, yt - bd, bw, bd, lidc, lid_top(W, num), orient=180)
+    P.polys.append(dict(pts=[(xc, yt - bd), (xc + bw, yt - bd), (xc + bw - 3, yt - bd - BOX_TUCK), (xc + 3, yt - bd - BOX_TUCK)],
                         fill=lidc, decor=None, frame=None, tab=False))
     # Staubklappen an den Seitenwaenden
-    for k in (0, 2):
-        y = oy + k * s
-        P.polys.append(dict(pts=[(wx, y), (wx, y + s), (wx - BOX_DUST, y + s - 16), (wx - BOX_DUST, y + 3)],
+    for x0 in (xb, xd):
+        P.polys.append(dict(pts=[(x0, yt), (x0 + bd, yt), (x0 + bd - 3, yt - BOX_DUST), (x0 + 3, yt - BOX_DUST)],
                             fill=base, decor=None, frame=None, tab=False))
-    P.rect(wx + s, oy + 3 * s, s, s, mix(W['c'], WHITE, 0.6), plain_label(['Boden']), orient=0)
-    P.tab((wx + s, oy), (wx, oy), t, inset=2.5)
-    for k in range(3):
-        P.tab((wx + s, oy + (k + 1) * s), (wx + s, oy + k * s), t, inset=2.5)
+    # Boden an der Vorderwand
+    P.rect(xa, yt + bh, bw, bd, mix(W['c'], WHITE, 0.6), plain_label(['Boden']), orient=0)
+    # Klebelaschen: Ring-Schluss und drei Bodenlaschen
+    P.tab((xe, yt), (xe, yt + bh), BOX_TAB, inset=3)
+    for x0, x1 in ((xb, xb + bd), (xc, xc + bw), (xd, xd + bd)):
+        P.tab((x0, yt + bh), (x1, yt + bh), BOX_TAB, inset=2.5)
     return P
 
 
-def part_box_bottom(W, ox, oy, rotated=False):
-    """Kaestchen-Unterteil als L-Netz. rotated=True -> um 180 Grad gedreht."""
-    P = Part('Kästchen-Unterteil')
-    s, t = BOX, BOX_TAB
-    deco, base = box_wall(W)
-    total_h = 4 * s
-
-    def X(x, y):
-        if rotated:
-            return (ox - x, oy + total_h - y)
-        return (ox + x, oy + y)
-
-    for k in range(4):
-        a = X(0, k * s)
-        b = X(s, (k + 1) * s)
-        x0, y0 = min(a[0], b[0]), min(a[1], b[1])
-        P.rect(x0, y0, s, s, base, deco, orient=90 if rotated else 270)
-    a, b = X(s, 3 * s), X(2 * s, 4 * s)
-    P.rect(min(a[0], b[0]), min(a[1], b[1]), s, s, mix(W['c'], WHITE, 0.6), plain_label(['Boden']), orient=0)
-    # Klebelasche Ring-Schluss
-    side = 1
-    P.tab(X(s, 0), X(0, 0), t, inset=2.5, side=side)
-    # Bodenlaschen
-    for k in range(3):
-        P.tab(X(s, (k + 1) * s), X(s, k * s), t, inset=(2.5, 2.5), side=side)
-    return P
-
-
-def part_lid(W, num, ox, oy):
-    P = Part('Deckel %d' % num)
-    s, h = LID, LID_H
-    x0, y0 = ox + h, oy + h
-    P.rect(x0, y0, s, s, mix(W['c'], WHITE, 0.25), lid_top(W, num))
-    wall = lid_wall(W, num)
-    P.rect(x0, oy, s, h, W['c'], wall, orient=180)
-    P.rect(x0, y0 + s, s, h, W['c'], wall, orient=0)
-    P.rect(ox, y0, h, s, W['c'], wall, orient=90)
-    P.rect(x0 + s, y0, h, s, W['c'], wall, orient=270)
-    # Laschen an Ober- und Unterkante, greifen in die Ecken
-    for a, b in (((x0, y0), (x0, oy)), ((x0 + s, oy), (x0 + s, y0)),
-                 ((x0, y0 + s + h), (x0, y0 + s)), ((x0 + s, y0 + s), (x0 + s, y0 + s + h))):
-        P.tab(a, b, h * 0.85, inset=2)
-    return P
+def _wall(P, x, y, w, h, W, orient=0):
+    wh = [(xx, WG_WHEEL_R) for xx in WG_WHEELS]
+    return P.wall_with_wheels(x, y, w, h, W['c'], wagon_side(W), orient, wh)
 
 
 def part_wagon_a(W, ox, oy):
+    """Boden mit zwei Stirnwaenden und einer langen Seitenwand mit Fenster und Raedern."""
     P = Part('Waggon %d Teil A' % W['n'])
-    e, s, H = WG_LOW, WG, WG_H
-    fx, fy = ox + e, oy + H
-    floor_label = plain_label(['Waggon %d · Teil A' % W['n'], 'Unterseite – wird nicht gesehen',
-                               'Wände nach oben falten,', 'bedruckte Seite nach außen',
-                               'Räder beim Ausschneiden mit ausschneiden'], size=4.2)
-    P.rect(fx, fy, s, s, mix(W['c'], WHITE, 0.55), floor_label)
-    side = wagon_side(W)
-    wh = [(x, WG_WHEEL_R) for x in WG_WHEELS]
-    arcs = P.wall_with_wheels(fx, oy, s, H, W['c'], side, 0, wh)
-    arcs += P.wall_with_wheels(fx, fy + s, s, H, W['c'], side, 180, wh)
-    P.polys.pop(0)
-    P.rect_with_notches(fx, fy, s, s, mix(W['c'], WHITE, 0.55), floor_label, arcs)
-    endf = wagon_endflap(W)
-    P.rect(ox, fy, e, s, W['c'], endf, orient=270)
-    P.rect(fx + s, fy, e, s, W['c'], endf, orient=90)
-    # Laschen an den Seitenwaenden (aussen links/rechts)
-    P.tab((fx, fy), (fx, oy), 10, inset=(5, 2.5), side=1)
-    P.tab((fx + s, oy), (fx + s, fy), 10, inset=(2.5, 5), side=1)
-    P.tab((fx, fy + s + H), (fx, fy + s), 10, inset=(2.5, 5), side=1)
-    P.tab((fx + s, fy + s), (fx + s, fy + s + H), 10, inset=(5, 2.5), side=1)
+    L, Wd, H = WG_L, WG_W, WG_H
+    fx, fy = ox + H, oy + H
+    arcs = _wall(P, fx, oy, L, H, W, 0)
+    label = plain_label(['Waggon %d · Teil A' % W['n'], 'Boden – wird nicht gesehen',
+                         'Wände nach oben falten', '(bedruckte Seite außen)'], size=4.2)
+    P.rect_with_notches(fx, fy, L, Wd, mix(W['c'], WHITE, 0.55), label, arcs)
+    endw = wagon_endwall(W)
+    P.rect(ox, fy, H, Wd, W['c'], endw, orient=270)
+    P.rect(fx + L, fy, H, Wd, W['c'], endw, orient=90)
+    for x0, x1 in ((ox, ox + H), (fx + L, fx + L + H)):
+        P.tab((x0, fy), (x1, fy), 10, inset=(3, 3))
+        P.tab((x1, fy + Wd), (x0, fy + Wd), 10, inset=(3, 3))
     return P
 
 
 def part_wagon_b(W, ox, oy):
+    """Gegenueberliegende lange Seitenwand mit Fenster, Raedern und Bodenlaschen."""
     P = Part('Waggon %d Teil B' % W['n'])
-    e, s, H = WG_LOW, WG_B, WG_H - WG_LOW
-    fx, fy = ox + e, oy + H
-    P.rect(fx, fy, s, s, CREAM2,
-           plain_label(['Waggon %d · Teil B' % W['n'], 'Zwischenboden (Unterseite)',
-                        'Stirnwände nach oben,', 'Stützen nach unten falten'], size=4.2))
-    endw = wagon_endwall(W)
-    P.rect(fx, oy, s, H, W['c'], endw, orient=0)
-    P.rect(fx, fy + s, s, H, W['c'], endw, orient=180)
-    leg = plain_label(['Stütze'], size=3.6, opacity=0.5)
-    P.rect(ox, fy, e, s, CREAM2, leg, orient=90)
-    P.rect(fx + s, fy, e, s, CREAM2, leg, orient=270)
+    arcs = _wall(P, ox, oy, WG_L, WG_H, W, 0)
+    yb = oy + WG_H
+    ends = [(ox + WG_L, yb)] + [pt for a in arcs for pt in (a[0], a[-1])] + [(ox, yb)]
+    for k in range(0, len(ends), 2):
+        a, b = ends[k], ends[k + 1]
+        if abs(a[0] - b[0]) > 1:
+            P.tab(a, b, 8, inset=2, label=abs(a[0] - b[0]) > 20)
     return P
 
 

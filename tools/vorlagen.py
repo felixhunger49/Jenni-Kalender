@@ -21,7 +21,7 @@ class Page:
         return part
 
     # Kopfzeile, Legende, Massstab
-    def chrome(self, legend_at=None, scale_at=None, title_at=None, vertical=False):
+    def chrome(self, legend_at=None, scale_at=None, title_at=None, vertical=False, short=False):
         W, H = self.size
         o = []
         if self.header:
@@ -40,7 +40,7 @@ class Page:
         if vertical and scale_at:
             o.append('<g transform="translate(%s,%s) rotate(-90)">%s</g>' % (f(sx), f(sy), self._scale(0, 0, True)))
         else:
-            o.append(self._scale(sx, sy))
+            o.append(self._scale(sx, sy, short))
         if self.copies > 1:
             o.append(text(W - 10, H - 7, '%d× drucken' % self.copies, 4.2, '#B0574A', anchor='end', weight='bold'))
         return ''.join(o)
@@ -131,9 +131,9 @@ def build_pages():
 
     # ---------------- Kleinteile
     p = Page('kleinteile', 'Kupplungen und Treibstangen', 'Die Räder sind schon an Waggons und Lok angesetzt. Hier nur noch die Kleinteile (optional).')
-    for i in range(6):
+    for i in range(4):
         p.add(part_coupling(14 + 64 * (i % 3), 56 + 26 * (i // 3)))
-    p.extra.append(label(105, 48, 'Kupplungen – längs falten und zwischen die Waggons kleben (6 Stück)'))
+    p.extra.append(label(105, 48, 'Kupplungen – längs falten und zwischen die Waggons kleben (4 Stück)'))
     for i in range(2):
         p.add(part_rod(12 + 96 * i, 128, w=94))
     p.extra.append(label(105, 121, 'Treibstangen für die Lok – von Rad zu Rad kleben'))
@@ -143,20 +143,23 @@ def build_pages():
     for W in WAGONS:
         n = W['n']
         p = Page('waggon-%d-a' % n, 'Waggon %d (%s) · Teil A' % (n, W['name']),
-                 'Seitenwände + Boden', header=False)
-        p.add(part_wagon_a(W, 10, 8.5))
+                 'Boden, Stirnwände und eine lange Wand. Räder mit ausschneiden.', LANDSCAPE)
+        p.add(part_wagon_a(W, 8.5, 22))
         p._special = 'wagon_a'
         pages.append(p)
-
-        p = Page('waggon-%d-b' % n, 'Waggon %d (%s) · Teil B' % (n, W['name']),
-                 'Zwischenboden mit Stirnwänden. Stirnwände nach oben, Stützen nach unten falten.')
-        p.add(part_wagon_b(W, 10, 52))
+    for n0 in (1, 3):
+        p = Page('waggon-%d%d-b' % (n0, n0 + 1), 'Waggon %d + %d · Teil B' % (n0, n0 + 1),
+                 'Die zweite lange Seitenwand je Waggon. Räder mit ausschneiden, Bodenlaschen nach innen.')
+        for k, W in enumerate(WAGONS[n0 - 1:n0 + 1]):
+            oy = 40 + 125 * k
+            p.add(part_wagon_b(W, 45, oy))
+            p.extra.append(label(105, oy - 6, 'Waggon %d (%s)' % (W['n'], W['name']), 4.4))
         pages.append(p)
-
-        for num in range(4 * n - 3, 4 * n + 1):
-            p = Page('kaestchen-%02d' % num, 'Kästchen %d · Waggon %d' % (num, n),
-                     'Ein Teil mit Klappdeckel: Wände zum Ring, Boden einkleben, Deckel mit Zunge schließen.')
-            p.add(part_box(W, num, 16, 47))
+    for W in WAGONS:
+        for num in range(6 * W['n'] - 5, 6 * W['n'] + 1):
+            p = Page('kaestchen-%02d' % num, 'Kästchen %d · Waggon %d' % (num, W['n']),
+                     'Ein Teil mit Klappdeckel: Wände zum Ring kleben, Boden einkleben, Deckel mit Zunge schließen.')
+            p.add(part_box(W, num, 22, 40))
             pages.append(p)
     return pages
 
@@ -164,11 +167,7 @@ def build_pages():
 def page_chrome(p):
     W, H = p.size
     if getattr(p, '_special', None) == 'wagon_a':
-        return p.chrome(legend_at=(176, 14), scale_at=(18, 285), vertical=True,
-                        title_at=None) + \
-            '<g transform="translate(13,14)">%s%s</g>' % (
-                text(0, 0, p.title.split(' · ')[0], 4.6, INK, anchor='start', font=FONT_HAND),
-                text(0, 5, 'Teil A', 4.6, INK, anchor='start', font=FONT_HAND))
+        return p.chrome(scale_at=(225, 50), short=True)
     return p.chrome()
 
 
