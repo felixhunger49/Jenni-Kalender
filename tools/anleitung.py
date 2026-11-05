@@ -93,7 +93,7 @@ def body(pages):
 <div class="chips"><span class="chip">24 Kästchen</span><span class="chip">4 Waggons</span><span class="chip">1 Lok</span></div>
 <div class="cols">
  <div class="box"><h3>So ist der Zug gebaut</h3>
-  <p>Jedes Teil ist möglichst <b>aus einem Stück gefaltet</b> und nur an Laschen geklebt. Auch die Räder sind direkt an Waggons und Lok angesetzt.</p>
+  <p>Jedes Teil ist möglichst <b>aus einem Stück gefaltet</b> und nur an Laschen geklebt. Die Räder der Lok sind am Fahrgestell angesetzt, die Waggon-Räder werden separat aufgeklebt.</p>
   <ul>
    <li><b>Lok:</b> Fahrgestell mit Rädern, Führerhaus, Kessel (+ Deckel) und Schornstein</li>
    <li><b>Waggon:</b> nur 2 Teile – Teil A (Boden, Stirnwände und eine lange Wand) und Teil B (die zweite lange Wand), oben offen, ohne Zwischenboden</li>
@@ -199,20 +199,20 @@ def body(pages):
     cam = Cam(yaw=24, pitch=24)
     wA = render(M.wagon_A_only(W1), cam)
     wB = render(M.wagon_B_only(W1), cam)
-    wAB = render(M.wagon_model(W1, boxes=False, near_off=60), cam, arrows=[((60, -105, 40), (60, -30, 40))])
+    wAB = render(M.wagon_model(W1, boxes=False, wheels=False, near_off=60), cam, arrows=[((60, -105, 40), (60, -30, 40))])
     wDone = render(M.wagon_model(W1, boxes=False), cam)
     wFull = render(M.wagon_model(W1), cam)
     add('''
-<div class="head"><h2>Teil 2 · Die 4 Waggons</h2><span class="tag">je 2 Teile, Räder angesetzt, oben offen für 6 Kästchen</span></div>
+<div class="head"><h2>Teil 2 · Die 4 Waggons</h2><span class="tag">je 2 Teile + 4 Räder, oben offen für 6 Kästchen</span></div>
 <div class="steps">%s%s%s%s%s%s</div>
 ''' % (
-        step(1, 'Ausschneiden und rillen', 'Teil A (Boden, zwei Stirnwände, eine lange Wand mit Fenster und Rädern) und Teil B (die zweite lange Wand) ausschneiden, Räder mit ausschneiden. Im Boden entstehen dadurch zwei kleine Kerben, die sind richtig so. Alle gestrichelten Linien rillen.',
+        step(1, 'Ausschneiden und rillen', 'Teil A (Boden, zwei Stirnwände, eine lange Wand mit Fenster) und Teil B (die zweite lange Wand) ausschneiden. Alle gestrichelten Linien rillen. Die 16 Räder vom Radblatt ausschneiden.',
              '<div class="thumbs"><div class="thumb">%s</div><div class="thumb" style="flex:0.55">%s</div></div>' % (
                  thumb([part_wagon_a(W1, 0, 0)]), thumb([part_wagon_b(W1, 0, 0)]))),
         step(2, 'Teil A falten', 'Die beiden Stirnwände und die lange Wand nach oben falten, der Boden bleibt flach. Die Laschen oben an den Stirnwänden innen an die lange Wand kleben.', wA),
-        step(3, 'Teil B vorbereiten', 'Die Bodenlaschen unten an Teil B nach innen knicken. Teil B ist dann die zweite lange Wand, ebenfalls mit Fenster, Tier und Rädern.', wB),
+        step(3, 'Teil B vorbereiten', 'Die Bodenlaschen unten an Teil B nach innen knicken. Teil B ist dann die zweite lange Wand, ebenfalls mit Fenster und Tier.', wB),
         step(4, 'Teil B ankleben', 'Die unteren Laschen der Stirnwände und die Bodenlaschen von Teil B mit Kleber versehen. Teil B von der offenen Seite her ansetzen: Seine Enden liegen innen an den Stirnwand-Laschen, die Bodenlaschen auf dem Boden.', wAB),
-        step(5, 'Waggon fertig', 'Alle vier Wände sind gleich hoch (8 cm). Die Räder ragen unten 8 mm über, der Waggon steht auf seinen Rädern. Tipp: Für mehr Halt die Räder von innen mit einem Streifen Karton verstärken.', wDone),
+        step(5, 'Waggon fertig', 'Alle vier Wände sind gleich hoch (8 cm). Jetzt auf jeder langen Wand die zwei Räder auf die gestrichelten Kreise kleben. Sie ragen unten 8 mm über, der Waggon steht auf seinen Rädern. Tipp: Dicke Räder aus doppeltem Karton halten besser.', wDone),
         step(6, 'Kästchen einsetzen', 'Sechs Kästchen (2 nebeneinander, 3 hintereinander) direkt auf den Boden stellen. Die Kästchen sind 9 cm hoch und schauen oben gut 1 cm heraus, so lassen sie sich leicht herausnehmen.', wFull),
     ))
 

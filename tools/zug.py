@@ -409,7 +409,7 @@ def wagon_side(W, guides=True):
         o.append(bunting(34, 86, 50.5, 7, [W['d'], CREAM2, PINK], 4))
         o.append(gift(60, 66, 9, PINK if W['n'] != 2 else W['acc']))
         for x in WG_WHEELS:
-            o.append(wheel_art(x, h + WHEEL_DROP - WG_WHEEL_R, WG_WHEEL_R))
+            o.append(wheel_guide(x, h + WHEEL_DROP - WG_WHEEL_R, WG_WHEEL_R))
         return ''.join(o)
     return d
 
@@ -545,11 +545,12 @@ def chassis_back(w, h):
 
 
 def chassis_top(w, h):
+    dash = mix(LOCO['d'], LOCO['cream'], 0.15)
     o = ['<rect x="10" y="%s" width="110" height="%s" fill="none" stroke="%s" stroke-width="0.5" stroke-dasharray="2,1.5"/>' % (
-        f(h / 2 - 15), f(30), LOCO['cream']),
+        f(h / 2 - 15), f(30), dash),
         text(65, h / 2 + 1.8, 'Kessel hier aufkleben', 5, LOCO['cream']),
         '<rect x="120" y="%s" width="%s" height="%s" fill="none" stroke="%s" stroke-width="0.5" stroke-dasharray="2,1.5"/>' % (
-            f((h - CAB_B) / 2), f(CAB_A), f(CAB_B), LOCO['cream']),
+            f((h - CAB_B) / 2), f(CAB_A), f(CAB_B), dash),
         text(150, h / 2 - 2, 'Führerhaus', 5, LOCO['cream']),
         text(150, h / 2 + 5, 'hier', 5, LOCO['cream']),
         text(4, 7, '◄ vorne', 4, LOCO['cream'], anchor='start')]
@@ -911,8 +912,7 @@ def part_box(W, num, ox, oy):
 
 
 def _wall(P, x, y, w, h, W, orient=0):
-    wh = [(xx, WG_WHEEL_R) for xx in WG_WHEELS]
-    return P.wall_with_wheels(x, y, w, h, W['c'], wagon_side(W), orient, wh)
+    P.rect(x, y, w, h, W['c'], wagon_side(W), orient=orient)
 
 
 def part_wagon_a(W, ox, oy):
@@ -920,10 +920,10 @@ def part_wagon_a(W, ox, oy):
     P = Part('Waggon %d Teil A' % W['n'])
     L, Wd, H = WG_L, WG_W, WG_H
     fx, fy = ox + H, oy + H
-    arcs = _wall(P, fx, oy, L, H, W, 0)
+    _wall(P, fx, oy, L, H, W, 0)
     label = plain_label(['Waggon %d · Teil A' % W['n'], 'Boden – wird nicht gesehen',
                          'Wände nach oben falten', '(bedruckte Seite außen)'], size=4.2)
-    P.rect_with_notches(fx, fy, L, Wd, mix(W['c'], WHITE, 0.55), label, arcs)
+    P.rect(fx, fy, L, Wd, mix(W['c'], WHITE, 0.55), label)
     endw = wagon_endwall(W)
     P.rect(ox, fy, H, Wd, W['c'], endw, orient=270)
     P.rect(fx + L, fy, H, Wd, W['c'], endw, orient=90)
@@ -934,15 +934,11 @@ def part_wagon_a(W, ox, oy):
 
 
 def part_wagon_b(W, ox, oy):
-    """Gegenueberliegende lange Seitenwand mit Fenster, Raedern und Bodenlaschen."""
+    """Gegenueberliegende lange Seitenwand mit Fenster und Bodenlaschen."""
     P = Part('Waggon %d Teil B' % W['n'])
-    arcs = _wall(P, ox, oy, WG_L, WG_H, W, 0)
+    _wall(P, ox, oy, WG_L, WG_H, W, 0)
     yb = oy + WG_H
-    ends = [(ox + WG_L, yb)] + [pt for a in arcs for pt in (a[0], a[-1])] + [(ox, yb)]
-    for k in range(0, len(ends), 2):
-        a, b = ends[k], ends[k + 1]
-        if abs(a[0] - b[0]) > 1:
-            P.tab(a, b, 8, inset=2, label=abs(a[0] - b[0]) > 20)
+    P.tab((ox + WG_L, yb), (ox, yb), 8, inset=2)
     return P
 
 

@@ -141,12 +141,12 @@ def wagon_model(W, ox=0.0, boxes=True, wheels=True, near=True, near_off=0.0):
 
 def wagon_A_only(W):
     P = wagon_parts(W)
-    return [wheels_wagon(0, 'far'), [P['floor'], P['wall_far'], P['end_right']] + P['tabs'], [P['end_left']]]
+    return [[P['floor'], P['wall_far'], P['end_right']] + P['tabs'], [P['end_left']]]
 
 
 def wagon_B_only(W):
     P = wagon_parts(W)
-    return [[P['wall_near']], wheels_wagon(0, 'near')]
+    return [[P['wall_near']]]
 
 
 # ---------------------------------------------------------------- Lok

@@ -7,7 +7,7 @@ Bastelvorlage für einen Adventskalender-Zug: eine Lok und 4 Waggons, oben offen
 | Datei | Inhalt |
 |---|---|
 | `ausgabe/Anleitung-Eisenbahn-Adventskalender.pdf` | Bebilderte Schritt-für-Schritt-Anleitung (6 Seiten): Material, Drucktipps, Kästchen, Waggons, Lok, Zusammenstellen |
-| `ausgabe/Vorlagen-Eisenbahn-Adventskalender.pdf` | 34 farbige Druckvorlagen A4 in Originalgröße, jedes Blatt 1× |
+| `ausgabe/Vorlagen-Eisenbahn-Adventskalender.pdf` | 35 farbige Druckvorlagen A4 in Originalgröße, jedes Blatt 1× |
 | `ausgabe/svg/druck/` | jede Vorlage als SVG mit den Ebenen *Druck*, *Schneiden*, *Falzen* |
 | `ausgabe/svg/plotter/` | nur Schnitt- (rot) und Rilllinien (blau) für Schneideplotter |
 
@@ -21,7 +21,7 @@ Drucken mit **„Tatsächliche Größe“ / 100 %** auf Karton mit 250–300 g/m
 
 ## Aufbau mit wenigen Teilen
 
-- **Waggon:** nur 2 gefaltete Teile. Teil A = Boden + zwei Stirnwände + eine lange Wand, Teil B = die zweite lange Wand. Die Räder sind an den langen Wänden angesetzt.
+- **Waggon:** 2 gefaltete Teile + 4 Räder. Teil A = Boden + zwei Stirnwände + eine lange Wand, Teil B = die zweite lange Wand. Die 16 Räder sind separat (1 Blatt) und werden außen auf die langen Wände geklebt.
 - **Lok:** Fahrgestell (mit angesetzten Rädern), Führerhaus (mit Dach), Kessel (+ runder Deckel) und Schornstein, je aus einem Stück. Optional Rauchwolke, Treibstangen, Kupplungen.
 - **Kästchen:** ein Stück mit Klappdeckel.
 

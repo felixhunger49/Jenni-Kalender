@@ -130,7 +130,7 @@ def build_pages():
     pages.append(p)
 
     # ---------------- Kleinteile
-    p = Page('kleinteile', 'Kupplungen und Treibstangen', 'Die Räder sind schon an Waggons und Lok angesetzt. Hier nur noch die Kleinteile (optional).')
+    p = Page('kleinteile', 'Kupplungen und Treibstangen', 'Die Lok-Räder sind schon angesetzt, die Waggon-Räder liegen auf eigenem Blatt. Hier nur noch die Kleinteile (optional).')
     for i in range(4):
         p.add(part_coupling(14 + 64 * (i % 3), 56 + 26 * (i // 3)))
     p.extra.append(label(105, 48, 'Kupplungen – längs falten und zwischen die Waggons kleben (4 Stück)'))
@@ -140,16 +140,20 @@ def build_pages():
     pages.append(p)
 
     # ---------------- Waggons
+    p = Page('waggon-raeder', 'Waggon-Räder (16 Stück)', 'Ausschneiden und je 4 Räder pro Waggon außen auf die gestrichelten Kreise der langen Wände kleben.')
+    for i in range(16):
+        p.add(part_wheel(25 + 40 * (i % 5), 50 + 40 * (i // 5), WG_WHEEL_R))
+    pages.append(p)
     for W in WAGONS:
         n = W['n']
         p = Page('waggon-%d-a' % n, 'Waggon %d (%s) · Teil A' % (n, W['name']),
-                 'Boden, Stirnwände und eine lange Wand. Räder mit ausschneiden.', LANDSCAPE)
+                 'Boden, Stirnwände und eine lange Wand.', LANDSCAPE)
         p.add(part_wagon_a(W, 8.5, 22))
         p._special = 'wagon_a'
         pages.append(p)
     for n0 in (1, 3):
         p = Page('waggon-%d%d-b' % (n0, n0 + 1), 'Waggon %d + %d · Teil B' % (n0, n0 + 1),
-                 'Die zweite lange Seitenwand je Waggon. Räder mit ausschneiden, Bodenlaschen nach innen.')
+                 'Die zweite lange Seitenwand je Waggon. Bodenlaschen nach innen.')
         for k, W in enumerate(WAGONS[n0 - 1:n0 + 1]):
             oy = 40 + 125 * k
             p.add(part_wagon_b(W, 45, oy))
