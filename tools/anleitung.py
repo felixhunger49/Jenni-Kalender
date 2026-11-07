@@ -3,6 +3,11 @@ from zug import (text, INK, CUT, FOLD, TAB, WAGONS, part_box, part_wagon_a, part
                  part_chassis, part_cab, part_boiler, part_disc, part_chimney, part_cloud, f, mix)
 from iso import render, Cam
 import modelle as M
+from zug import THEME
+
+XMAS = THEME == 'weihnachten'
+SUB = ('Weihnachts-Edition · ' if XMAS else '') + 'Bastelvorlage &amp; Schritt-für-Schritt-Anleitung'
+ACCENT = '#B3262E' if XMAS else '#C98E6E'
 
 CSS = '''
 body { font-family: 'Nunito', sans-serif; color: #5A4636; }
@@ -31,11 +36,11 @@ td.k { text-align: center; width: 14mm; font-weight: 700; }
 .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5mm 6mm; }
 .step { background: #FFFFFF; border: 0.3mm solid #E8DDCD; border-radius: 3mm; padding: 3mm 4mm 3.2mm; position: relative; }
 .step .fig { height: 45mm; margin-bottom: 2mm; }
-.step .num { position: absolute; top: 2.5mm; left: 3mm; width: 8mm; height: 8mm; border-radius: 50%; background: #C98E6E;
+.step .num { position: absolute; top: 2.5mm; left: 3mm; width: 8mm; height: 8mm; border-radius: 50%; background: __ACC__;
              color: #fff; font-family: 'Patrick Hand', cursive; font-size: 15pt; line-height: 8.3mm; text-align: center; }
 .step p { font-size: 9.1pt; margin: 0; }
 .head { display: flex; align-items: baseline; gap: 5mm; margin-bottom: 4mm; border-bottom: 0.4mm dashed #D9C9B4; padding-bottom: 2.5mm; }
-.head .tag { font-family: 'Patrick Hand', cursive; font-size: 13pt; color: #C98E6E; }
+.head .tag { font-family: 'Patrick Hand', cursive; font-size: 13pt; color: __ACC__; }
 .legend { display: flex; flex-direction: column; gap: 1.6mm; }
 .legend div { display: flex; align-items: center; gap: 3mm; font-size: 9.4pt; }
 .tip { background: #F3EADB; border-radius: 3mm; padding: 3mm 4.5mm; margin-top: 4mm; font-size: 9.4pt; }
@@ -44,7 +49,7 @@ td.k { text-align: center; width: 14mm; font-weight: 700; }
 .thumb { height: 100%; flex: 1; }
 .wide { grid-column: 1 / span 2; }
 .wide .fig { height: 62mm; }
-'''
+'''.replace('__ACC__', ACCENT)
 
 
 def page_footer(p, i, n):
@@ -87,7 +92,7 @@ def body(pages):
     add('''
 <div style="text-align:center; margin-top:4mm">
   <h1 style="font-size:40pt">Eisenbahn-Adventskalender</h1>
-  <div class="sub">Bastelvorlage &amp; Schritt-für-Schritt-Anleitung</div>
+  <div class="sub">%s</div>
 </div>
 <div class="cover-fig">%s</div>
 <div class="chips"><span class="chip">24 Kästchen</span><span class="chip">4 Waggons</span><span class="chip">1 Lok</span></div>
@@ -115,7 +120,7 @@ def body(pages):
    <tr><td><b>SVG – Plotter</b></td><td>nur Schnitt- (rot) und Rilllinien (blau) für Cricut, Silhouette &amp; Co.</td></tr>
   </table></div>
 </div>
-''' % (cover, len(pages)))
+''' % (SUB, cover, len(pages)))
 
     # ------------------------------------------------ Uebersicht
     rows = []

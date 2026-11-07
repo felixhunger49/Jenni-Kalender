@@ -5,7 +5,7 @@ from zug import (WAGONS, LOCO, WOOD, WOOD2, WOODD, TAB, CREAM, CREAM2, BOILER_R,
                  BOX_W, BOX_D, BOX_H,
                  wagon_side, wagon_endwall, box_wall, lid_top, wheel_decor,
                  chassis_side, chassis_front, chassis_back, chassis_top, cab_side, cab_front, cab_back, cab_roof,
-                 boiler_disc, cloud_shape, cloud_decor, mix, chimney_profile)
+                 boiler_disc, cab_col, lid_col, floor_col, box_floor_col, cloud_shape, cloud_decor, mix, chimney_profile)
 
 Z0 = 8.0          # Bodenhoehe ueber dem Tisch (Raeder ragen 8 mm unter)
 WG = WG_L
@@ -30,12 +30,12 @@ def box_bottom(W, x, y, z, lx=BOX_W, ly=BOX_D, lz=BOX_H):
 def box_closed(W, num, x, y, z, lx=BOX_W, ly=BOX_D):
     d, base = _bdec(W)
     d['top'] = lid_top(W, num)
-    return [cuboid(x, y, z, lx, ly, BOX_H, base, d, cols=dict(top=mix(W['c'], '#FFFFFF', 0.25)))]
+    return [cuboid(x, y, z, lx, ly, BOX_H, base, d, cols=dict(top=lid_col(W)))]
 
 
 def box_lid_open(W, num, ang=105, tuck=True, lx=BOX_W, ly=BOX_D, lz=BOX_H):
     """Kaestchen mit aufgeklapptem Deckel (Scharnier an der Rueckwand)."""
-    lidc = mix(W['c'], '#FFFFFF', 0.25)
+    lidc = lid_col(W)
     walls = box_bottom(W, 0, 0, 0, lx, ly, lz)
     top = quad((0, ly, lz), (lx, 0, 0), (0, -ly, 0), lidc, lid_top(W, num), back=lidc)
     parts = [top]
@@ -58,7 +58,7 @@ def box_folding(W):
     tabs = [Face([(0, 0, 0), (lx, 0, 0), (lx - 2, t, 0), (2, t, 0)], TAB, normal=(0, 0, 1), back=TAB),
             Face([(0, ly, 0), (0, 0, 0), (t, 2, 0), (t, ly - 2, 0)], TAB, normal=(0, 0, 1), back=TAB),
             Face([(lx, ly, 0), (0, ly, 0), (2, ly - t, 0), (lx - 2, ly - t, 0)], TAB, normal=(0, 0, 1), back=TAB)]
-    base_face = quad((0, 0, 0), (lx, 0, 0), (0, ly, 0), mix(W['c'], '#FFFFFF', 0.6))
+    base_face = quad((0, 0, 0), (lx, 0, 0), (0, ly, 0), box_floor_col(W))
     base_face = rotate([base_face], (0, 0, 0), (1, 0, 0), -125)
     return [walls + tabs, base_face], [((lx / 2, -45, -45), (lx / 2, -5, -8))]
 
@@ -78,7 +78,7 @@ def wagon_parts(W, ox=0.0):
     L, Wd, H = WG_L, WG_W, WG_H
     z0 = Z0
     P = dict(
-        floor=quad((ox, 0, z0), (L, 0, 0), (0, Wd, 0), mix(W['c'], '#FFFFFF', 0.55)),
+        floor=quad((ox, 0, z0), (L, 0, 0), (0, Wd, 0), floor_col(W)),
         wall_near=quad((ox, 0, z0 + H), (L, 0, 0), (0, 0, -H), W['c'], wagon_side(W, guides=False)),
         wall_far=quad((ox + L, Wd, z0 + H), (-L, 0, 0), (0, 0, -H), W['c'], wagon_side(W, guides=False)),
         end_left=quad((ox, Wd, z0 + H), (0, -Wd, 0), (0, 0, -H), W['c'], wagon_endwall(W)),
@@ -160,7 +160,7 @@ def chassis(guides=False):
 def cab(lift=0.0):
     zc = Z0 + CH_H + lift
     y0 = (CH_W - CAB_B) / 2
-    faces = cuboid(CH_L - CAB_A, y0, zc, CAB_A, CAB_B, CAB_H, LOCO['cream'],
+    faces = cuboid(CH_L - CAB_A, y0, zc, CAB_A, CAB_B, CAB_H, cab_col(),
                    dict(front=cab_side, back=cab_side, left=cab_front, right=cab_back), skip=('top', 'bottom'))
     faces.append(quad((CH_L - CAB_A, y0 + CAB_B, zc + CAB_H), (CAB_ROOF, 0, 0), (0, -CAB_B, 0), LOCO['d'], cab_roof,
                       back=LOCO['d']))

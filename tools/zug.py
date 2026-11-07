@@ -37,6 +37,42 @@ WAGONS = [
 LOCO = dict(c='#B7C3A5', d='#8C9B79', boiler='#E8C4BA', boilerd='#C49A8E', cream='#F3EADB',
             scarf='#9DB3C2')
 
+TRUNK = WOOD2
+THEME = os.environ.get('ZUG_THEME', '')
+
+if THEME == 'weihnachten':
+    # Weihnachtsfarben: Rot, Gruen, Gold, Schneeweiss. Formen, Masse und Tiere bleiben gleich.
+    RED, REDD = '#B3262E', '#86191F'
+    GREEN, GREEND = '#2E6B3F', '#1D4A2A'
+    GOLD, GOLDD = '#D9A93B', '#A97C1E'
+    SNOW, SNOWD = '#FBF8F2', '#E4DCCD'
+    FIR, FIRD = '#3F8A52', '#2A6138'
+    STAR = '#EBC55A'
+    TREE, TREED = FIR, FIRD
+    PINK = RED
+    WOOD, WOOD2, WOODD = '#7E1F24', GOLD, '#4A2A1E'
+    TRUNK = '#6E4A34'
+    TAB = '#ECE6DC'
+    _snowtree = dict(tree=SNOW, treed=SNOWD)
+    _firtree = dict(tree=FIR, treed=FIRD)
+    WAGONS = [
+        dict(WAGONS[0], c=RED, d=REDD, acc=GOLD, frame=SNOW, pat=('flocken', SNOW, None), star=STAR, star2=SNOW,
+             gift=GREEN, ribbon=GOLD, bunt=[GREEN, SNOW, GOLD], num=REDD, **_firtree,
+             box=SNOW, boxd=RED, boxpat=('sterne', RED, GREEN), boxtree=_firtree, lid=SNOW),
+        dict(WAGONS[1], c=GREEN, d=GREEND, acc=GOLD, frame=GOLD, pat=('karo', RED, GOLD), star=STAR, star2=SNOW,
+             gift=RED, ribbon=GOLD, bunt=[RED, SNOW, GOLD], num=GREEND, **_snowtree,
+             box=RED, boxd=REDD, boxpat=('flocken', SNOW, None), boxtree=_firtree, lid=SNOW),
+        dict(WAGONS[2], c=GOLD, d=GOLDD, acc=SNOW, frame=SNOW, pat=('sterne', SNOW, GOLDD), star=SNOW, star2=RED,
+             gift=RED, ribbon=SNOW, bunt=[RED, SNOW, GREEN], num=GOLDD, **_firtree,
+             box=GREEN, boxd=GREEND, boxpat=('flocken', SNOW, None), boxtree=_snowtree, lid=SNOW),
+        dict(WAGONS[3], c=SNOW, d=RED, acc=GREEN, frame=RED, pat=('streifen', RED, None), star=GOLD, star2=GREEN,
+             gift=GREEN, ribbon=RED, bunt=[GREEN, RED, GOLD], num=RED, **_firtree,
+             box=RED, boxd=REDD, boxpat=('sterne', GOLD, SNOW), boxtree=_firtree, lid=SNOW),
+    ]
+    LOCO = dict(c=GREEN, d=GREEND, boiler=RED, boilerd=GOLD, cream=SNOW, scarf=GOLD,
+                cab=RED, frame=SNOW, cabpat=('flocken', SNOW, None), boilerpat=('flocken', SNOW, None),
+                star=STAR, gift=GREEN, ribbon=GOLD, tree=FIR, treed=FIRD, heart=GOLD)
+
 FONT_HAND = "'Patrick Hand', 'Hand', 'Comic Sans MS', cursive"
 FONT_TXT = "'Nunito', 'Liberation Sans', Arial, sans-serif"
 
@@ -95,7 +131,7 @@ def dot(cx, cy, r, fill):
 def tree(cx, by, h, col=TREE, dark=TREED, snow=False):
     w = h * 0.62
     out = ['<rect x="%s" y="%s" width="%s" height="%s" fill="%s"/>' % (
-        f(cx - h * 0.05), f(by - h * 0.14), f(h * 0.1), f(h * 0.14), WOOD2)]
+        f(cx - h * 0.05), f(by - h * 0.14), f(h * 0.1), f(h * 0.14), TRUNK)]
     tiers = [(0.86, 0.0, 1.0), (0.62, 0.27, 0.8), (0.4, 0.52, 0.58)]
     for i, (b, t, sc) in enumerate(tiers):
         yb = by - h * 0.12 - h * t * 0.95
@@ -165,6 +201,69 @@ def arch_path(cx, top, w, h):
     x0, x1 = cx - r, cx + r
     return 'M%s,%s L%s,%s A%s,%s 0 0 1 %s,%s L%s,%s Z' % (
         f(x0), f(top + h), f(x0), f(top + r), f(r), f(r), f(x1), f(top + r), f(x1), f(top + h))
+
+
+def snowflake(cx, cy, r, col, sw=None):
+    sw = sw or max(r * 0.16, 0.3)
+    d = []
+    for k in range(3):
+        a = math.radians(90 + 60 * k)
+        ux, uy = math.cos(a), math.sin(a)
+        d.append('M%s,%s L%s,%s' % (f(cx - ux * r), f(cy - uy * r), f(cx + ux * r), f(cy + uy * r)))
+    for k in range(6):
+        a = math.radians(90 + 60 * k)
+        bx, by = cx + math.cos(a) * r * 0.58, cy + math.sin(a) * r * 0.58
+        for s in (-1, 1):
+            b = a + s * math.radians(42)
+            d.append('M%s,%s L%s,%s' % (f(bx), f(by), f(bx + math.cos(b) * r * 0.36), f(by + math.sin(b) * r * 0.36)))
+    return '<path d="%s" stroke="%s" stroke-width="%s" stroke-linecap="round" fill="none"/>' % (' '.join(d), col, f(sw))
+
+
+def pattern(spec, w, h, seed=0):
+    """Flaechenmuster: ('flocken'|'sterne'|'karo'|'streifen', Farbe, Zweitfarbe)."""
+    if not spec:
+        return ''
+    kind, col, col2 = spec
+    o = []
+    if kind == 'flocken':
+        sx, sy = 13.0, 12.0
+        for j in range(-1, int(h / sy) + 2):
+            off = (sx / 2) if j % 2 else 0
+            for i in range(-1, int(w / sx) + 2):
+                x, y = i * sx + off + 4, j * sy + 5
+                if (i + j + seed) % 3 == 0:
+                    o.append(dot(x, y, 0.7, col))
+                else:
+                    o.append(snowflake(x, y, 2.2 if (i * 7 + j * 3 + seed) % 5 else 1.6, col))
+        return '<g opacity="0.55">%s</g>' % ''.join(o)
+    if kind == 'sterne':
+        sx, sy = 10.0, 10.0
+        for j in range(-1, int(h / sy) + 2):
+            off = (sx / 2) if j % 2 else 0
+            for i in range(-1, int(w / sx) + 2):
+                x, y = i * sx + off + 3, j * sy + 4
+                if (i + 2 * j + seed) % 4 == 3 and col2:
+                    o.append(dot(x, y, 0.6, col2))
+                else:
+                    o.append(star(x, y, 1.25, col, rot=(i * 13 + j * 29) % 36))
+        return '<g opacity="0.7">%s</g>' % ''.join(o)
+    if kind == 'karo':
+        p = 16.0
+        for k in range(-1, int(max(w, h) / p) + 2):
+            v = k * p + 2
+            o.append('<rect x="%s" y="0" width="5" height="%s" fill="%s" opacity="0.28"/>' % (f(v), f(h), col))
+            o.append('<rect x="0" y="%s" width="%s" height="5" fill="%s" opacity="0.28"/>' % (f(v), f(w), col))
+            o.append('<rect x="%s" y="0" width="0.6" height="%s" fill="%s" opacity="0.8"/>' % (f(v + 10), f(h), col2))
+            o.append('<rect x="0" y="%s" width="%s" height="0.6" fill="%s" opacity="0.8"/>' % (f(v + 10), f(w), col2))
+        return ''.join(o)
+    if kind == 'streifen':
+        p, sw = 9.0, 3.2
+        k = -h
+        while k < w + h:
+            o.append('<polygon points="%s" fill="%s"/>' % (pts_str([(k, 0), (k + sw, 0), (k + sw + h, h), (k + h, h)]), col))
+            k += p
+        return '<g opacity="0.22">%s</g>' % ''.join(o)
+    return ''
 
 
 # ---------------------------------------------------------------- Tiergesichter
@@ -393,21 +492,27 @@ def wheel_guide(cx, cy, r):
             % (f(cx), f(cy), f(r), WOODD))
 
 
+def _tree_cols(W):
+    return W.get('tree', mix(TREE, W['d'], 0.3)), W.get('treed', TREED)
+
+
 def wagon_side(W, guides=True):
     def d(w, h):
-        o = []
+        xm = 'pat' in W
+        o = [pattern(W.get('pat'), w, h - 13, W['n'])]
         o.append('<rect x="0" y="%s" width="%s" height="%s" fill="%s"/>' % (f(h - 12), f(w), f(12), W['d']))
-        o.append('<rect x="0" y="%s" width="%s" height="1" fill="%s" opacity="0.8"/>' % (f(h - 13), f(w), CREAM2))
+        o.append('<rect x="0" y="%s" width="%s" height="1" fill="%s" opacity="0.8"/>' % (f(h - 13), f(w), W['acc'] if xm else CREAM2))
         for x in range(6, int(w), 12):
-            o.append(dot(x, h - 6, 0.9, mix(W['d'], '#000000', 0.25)))
-        o.append(tree(15, 46, 30, mix(TREE, W['d'], 0.3), TREED, snow=True))
-        o.append(tree(105, 46, 30, mix(TREE, W['d'], 0.3), TREED, snow=True))
+            o.append(dot(x, h - 6, 0.9, W['acc'] if xm else mix(W['d'], '#000000', 0.25)))
+        tc, td = _tree_cols(W)
+        o.append(tree(15, 46, 30, tc, td, snow=True))
+        o.append(tree(105, 46, 30, tc, td, snow=True))
         for x, y, r in ((6, 10, 2.4), (114, 10, 2.4), (28, 8, 2), (92, 8, 2), (5, 40, 1.6), (115, 40, 1.6),
                         (27, 38, 1.6), (93, 38, 1.6)):
-            o.append(star(x, y, r, STAR if r > 1.8 else CREAM2))
-        o.append(window_with_animal(60, 5, 50, 42, W['animal'], W['scarf']))
-        o.append(bunting(34, 86, 50.5, 7, [W['d'], CREAM2, PINK], 4))
-        o.append(gift(60, 66, 9, PINK if W['n'] != 2 else W['acc']))
+            o.append(star(x, y, r, W.get('star', STAR) if r > 1.8 else W.get('star2', CREAM2)))
+        o.append(window_with_animal(60, 5, 50, 42, W['animal'], W['scarf'], frame=W.get('frame', CREAM2)))
+        o.append(bunting(34, 86, 50.5, 7, W.get('bunt', [W['d'], CREAM2, PINK]), 4))
+        o.append(gift(60, 66, 9, W.get('gift', PINK if W['n'] != 2 else W['acc']), W.get('ribbon', CREAM2)))
         for x in WG_WHEELS:
             o.append(wheel_guide(x, h + WHEEL_DROP - WG_WHEEL_R, WG_WHEEL_R))
         return ''.join(o)
@@ -416,19 +521,23 @@ def wagon_side(W, guides=True):
 
 def wagon_endwall(W):
     def d(w, h):
-        o = [bunting(6, w - 6, 3, 9, [W['d'], CREAM2, PINK, STAR], 6),
+        o = [pattern(W.get('pat'), w, h - 13, W['n'] + 1),
+             bunting(6, w - 6, 3, 9, W.get('bunt', [W['d'], CREAM2, PINK]) + [W.get('star', STAR)], 6),
              '<rect x="0" y="%s" width="%s" height="12" fill="%s"/>' % (f(h - 12), f(w), W['d']),
              '<rect x="0" y="%s" width="%s" height="1" fill="%s" opacity="0.8"/>' % (f(h - 13), f(w), CREAM2),
              '<rect x="%s" y="%s" width="16" height="7" rx="1.5" fill="%s"/>' % (f(w / 2 - 8), f(h - 10), WOODD),
              dot(w / 2, h - 6.5, 1.6, WOOD2)]
         for x in range(6, int(w), 12):
             o.append(dot(x, h - 3, 0.7, mix(W['d'], '#000000', 0.25)))
-        o.append(tree(18, h - 14, 24, mix(TREE, W['d'], 0.3), TREED, snow=True))
-        o.append(tree(w - 18, h - 14, 24, mix(TREE, W['d'], 0.3), TREED, snow=True))
+        tc, td = _tree_cols(W)
+        o.append(tree(18, h - 14, 24, tc, td, snow=True))
+        o.append(tree(w - 18, h - 14, 24, tc, td, snow=True))
+        if 'frame' in W:
+            o.append('<circle cx="%s" cy="%s" r="14.4" fill="%s"/>' % (f(w / 2), f(36), W['frame']))
         o.append('<circle cx="%s" cy="%s" r="13" fill="%s"/>' % (f(w / 2), f(36), CREAM2))
-        o.append(text(w / 2, 42.5, str(W['n']), 17, W['d'], font=FONT_HAND))
+        o.append(text(w / 2, 42.5, str(W['n']), 17, W.get('num', W['d']), font=FONT_HAND))
         for x, y in ((w * 0.3, 18), (w * 0.7, 18), (w * 0.27, 40), (w * 0.73, 40)):
-            o.append(star(x, y, 1.8, STAR))
+            o.append(star(x, y, 1.8, W.get('star', STAR)))
         return ''.join(o)
     return d
 
@@ -471,16 +580,31 @@ def hub_decor(r):
 
 
 def box_wall(W):
-    base = mix(W['c'], WHITE, 0.45)
+    base = W.get('box', mix(W['c'], WHITE, 0.45))
+    bt = W.get('boxtree', {})
+    tc, td = bt.get('tree', mix(TREE, W['d'], 0.3)), bt.get('treed', TREED)
 
     def d(w, h):
-        o = [tree(w * 0.5, h - 10, 34, mix(TREE, W['d'], 0.3), TREED)]
+        o = [pattern(W.get('boxpat'), w, h, W['n'] + int(w)),
+             tree(w * 0.5, h - 10, 34, tc, td, snow='box' in W)]
         for fx, fy, r in ((0.2, 0.14, 2.4), (0.8, 0.24, 1.8), (0.22, 0.42, 1.6), (0.8, 0.52, 2.2), (0.18, 0.66, 1.8)):
-            o.append(star(w * fx, h * fy, r, STAR if r > 2 else W['d']))
-        o.append(sprig(w * 0.2, h - 14, 9, mix(TREE, W['d'], 0.3), -20))
-        o.append(sprig(w * 0.82, h - 16, 8, mix(TREE, W['d'], 0.3), 20))
+            o.append(star(w * fx, h * fy, r, STAR if r > 2 else W.get('boxd', W['d'])))
+        o.append(sprig(w * 0.2, h - 14, 9, tc, -20))
+        o.append(sprig(w * 0.82, h - 16, 8, tc, 20))
         return ''.join(o)
     return d, base
+
+
+def floor_col(W):
+    return mix(W['c'], WHITE, 0.55) if 'box' not in W else mix(W['c'], WHITE, 0.82)
+
+
+def box_floor_col(W):
+    return mix(W['c'], WHITE, 0.6) if 'box' not in W else mix(W['box'], WHITE, 0.82)
+
+
+def lid_col(W):
+    return W.get('lid', mix(W['c'], WHITE, 0.25))
 
 
 def lid_top(W, num):
@@ -488,10 +612,11 @@ def lid_top(W, num):
         size = min(w, h) * 0.66
         o = ['<rect x="2.5" y="2.5" width="%s" height="%s" rx="3" fill="%s"/>' % (f(w - 5), f(h - 5), CREAM2),
              '<rect x="4" y="4" width="%s" height="%s" rx="2" fill="none" stroke="%s" stroke-width="0.5" stroke-dasharray="1.4,1"/>' % (
-                 f(w - 8), f(h - 8), W['d']),
-             text(w / 2, h / 2 + size * 0.34, str(num), size, INK, font=FONT_HAND)]
-        o.append(sprig(8, 8, 6, mix(TREE, W['d'], 0.3), 40))
-        o.append(sprig(w - 8, h - 8, 6, mix(TREE, W['d'], 0.3), 220))
+                 f(w - 8), f(h - 8), W.get('boxd', W['d'])),
+             text(w / 2, h / 2 + size * 0.34, str(num), size, W.get('boxd', INK), font=FONT_HAND)]
+        sc = TREE if 'box' in W else mix(TREE, W['d'], 0.3)
+        o.append(sprig(8, 8, 6, sc, 40))
+        o.append(sprig(w - 8, h - 8, 6, sc, 220))
         o.append(star(w - 8, 8, 1.8))
         o.append(star(8, h - 8, 1.8))
         return ''.join(o)
@@ -502,7 +627,7 @@ def lid_wall(W, num):
     def d(w, h):
         o = []
         for i, x in enumerate(range(5, int(w), 9)):
-            o.append(star(x, h / 2 + (2 if i % 2 else -2), 1.7, CREAM2 if i % 2 else STAR))
+            o.append(star(x, h / 2 + (2 if i % 2 else -2), 1.7, W.get('boxd', CREAM2) if i % 2 else STAR))
         return ''.join(o)
     return d
 
@@ -532,7 +657,7 @@ def chassis_front(w, h):
     for x in (12, w - 12):
         o.append(dot(x, 7, 3.6, STAR))
         o.append(dot(x, 7, 2, CREAM2))
-    o.append(heart(w / 2, 7, 4.5, PINK))
+    o.append(heart(w / 2, 7, 4.5, LOCO.get('heart', PINK)))
     return ''.join(o)
 
 
@@ -557,18 +682,23 @@ def chassis_top(w, h):
     return ''.join(o)
 
 
+def cab_col():
+    return LOCO.get('cab', LOCO['cream'])
+
+
 def cab_side(w, h):
-    o = ['<rect x="0" y="%s" width="%s" height="10" fill="%s"/>' % (f(h - 10), f(w), LOCO['d'])]
-    o.append(window_with_animal(w / 2, 10, 40, 40, 'pinguin', LOCO['scarf']))
+    o = [pattern(LOCO.get('cabpat'), w, h - 10, 3),
+         '<rect x="0" y="%s" width="%s" height="10" fill="%s"/>' % (f(h - 10), f(w), LOCO['d'])]
+    o.append(window_with_animal(w / 2, 10, 40, 40, 'pinguin', LOCO['scarf'], frame=LOCO.get('frame', CREAM2)))
     o.append(tree(14, h - 13, 22, TREE, TREED, snow=True))
-    o.append(gift(w - 15, h - 13, 12, PINK))
+    o.append(gift(w - 15, h - 13, 12, LOCO.get('gift', PINK), LOCO.get('ribbon', CREAM2)))
     for x, y, r in ((8, 8, 2.2), (w - 8, 8, 2.2), (w / 2, 62, 2.4), (6, 56, 1.6), (w - 6, 58, 1.6)):
         o.append(star(x, y, r))
     return ''.join(o)
 
 
 def cab_front(w, h):
-    o = []
+    o = [pattern(LOCO.get('cabpat'), w, h - 10, 4)]
     for x in (w / 2 - 18, w / 2 + 18):
         o.append(dot(x, 16, 9, CREAM2))
         o.append(dot(x, 16, 7, '#F8F1E6'))
@@ -585,9 +715,10 @@ def cab_back(w, h):
          '<path d="%s" fill="%s"/>' % (arch_path(w / 2, 22, 30, 63), LOCO['d']),
          '<path d="%s" fill="%s"/>' % (arch_path(w / 2, 26, 22, 22), '#F8F1E6'),
          dot(w / 2 + 9, 62, 1.6, STAR)]
+    o.insert(0, pattern(LOCO.get('cabpat'), w, h - 10, 5))
     for x, y in ((10, 10), (w - 10, 10), (10, 60), (w - 10, 60)):
         o.append(star(x, y, 2.2))
-    o.append(heart(w / 2, 14, 6))
+    o.append(heart(w / 2, 14, 6, LOCO.get('heart', PINK)))
     return ''.join(o)
 
 
@@ -600,7 +731,7 @@ def cab_roof(w, h):
 
 def boiler_decor(w, h):
     """w = Umfang, h = Laenge (y=0 vorne)."""
-    o = []
+    o = [pattern(LOCO.get('boilerpat'), w, h, 6)]
     for y0, hh in ((4, 7), (60, 5), (h - 8, 8)):
         o.append('<rect x="0" y="%s" width="%s" height="%s" fill="%s"/>' % (f(y0), f(w), f(hh), LOCO['boilerd']))
         o.append('<rect x="0" y="%s" width="%s" height="1" fill="%s" opacity="0.7"/>' % (f(y0 + hh / 2 - 0.5), f(w), CREAM2))
@@ -617,7 +748,7 @@ def boiler_decor(w, h):
 
 def boiler_side(w, h):
     o = [tree(w * 0.55, h * 0.72 + 6, 26, TREE, TREED, snow=True),
-         gift(w * 0.82, h * 0.72 + 6, 11, PINK),
+         gift(w * 0.82, h * 0.72 + 6, 11, LOCO.get('gift', PINK), LOCO.get('ribbon', CREAM2)),
          star(w * 0.25, h * 0.45, 3), star(w * 0.7, h * 0.18, 2.2), star(w * 0.88, h * 0.4, 1.8)]
     return ''.join(o)
 
@@ -881,7 +1012,7 @@ def part_box(W, num, ox, oy):
     P = Part('Kästchen %d' % num)
     bw, bd, bh = BOX_W, BOX_D, BOX_H
     deco, base = box_wall(W)
-    lidc = mix(W['c'], WHITE, 0.25)
+    lidc = lid_col(W)
     yt = oy + BOX_TUCK + bd            # Oberkante der Waende
     xa = ox
     xb, xc, xd = xa + bw, xa + bw + bd, xa + 2 * bw + bd
@@ -903,7 +1034,7 @@ def part_box(W, num, ox, oy):
         P.polys.append(dict(pts=[(x0, yt), (x0 + bd, yt), (x0 + bd - 3, yt - BOX_DUST), (x0 + 3, yt - BOX_DUST)],
                             fill=base, decor=None, frame=None, tab=False))
     # Boden an der Vorderwand
-    P.rect(xa, yt + bh, bw, bd, mix(W['c'], WHITE, 0.6), plain_label(['Boden']), orient=0)
+    P.rect(xa, yt + bh, bw, bd, box_floor_col(W), plain_label(['Boden']), orient=0)
     # Klebelaschen: Ring-Schluss und drei Bodenlaschen
     P.tab((xe, yt), (xe, yt + bh), BOX_TAB, inset=3)
     for x0, x1 in ((xb, xb + bd), (xc, xc + bw), (xd, xd + bd)):
@@ -923,7 +1054,7 @@ def part_wagon_a(W, ox, oy):
     _wall(P, fx, oy, L, H, W, 0)
     label = plain_label(['Waggon %d · Teil A' % W['n'], 'Boden – wird nicht gesehen',
                          'Wände nach oben falten', '(bedruckte Seite außen)'], size=4.2)
-    P.rect(fx, fy, L, Wd, mix(W['c'], WHITE, 0.55), label)
+    P.rect(fx, fy, L, Wd, floor_col(W), label)
     endw = wagon_endwall(W)
     P.rect(ox, fy, H, Wd, W['c'], endw, orient=270)
     P.rect(fx + L, fy, H, Wd, W['c'], endw, orient=90)
@@ -964,10 +1095,10 @@ def part_cab(ox, oy):
     a, b, h = CAB_A, CAB_B, CAB_H
     y0 = oy + CAB_ROOF
     xs = [ox, ox + a, ox + a + b, ox + 2 * a + b, ox + 2 * a + 2 * b]
-    P.rect(xs[0], y0, a, h, LOCO['cream'], cab_side)
-    P.rect(xs[1], y0, b, h, LOCO['cream'], cab_front)
-    P.rect(xs[2], y0, a, h, LOCO['cream'], cab_side)
-    P.rect(xs[3], y0, b, h, LOCO['cream'], cab_back)
+    P.rect(xs[0], y0, a, h, cab_col(), cab_side)
+    P.rect(xs[1], y0, b, h, cab_col(), cab_front)
+    P.rect(xs[2], y0, a, h, cab_col(), cab_side)
+    P.rect(xs[3], y0, b, h, cab_col(), cab_back)
     P.rect(xs[1], oy, b, CAB_ROOF, LOCO['d'], cab_roof)
     # Schlusslasche
     P.tab((xs[4], y0), (xs[4], y0 + h), 10, inset=3, side=1)

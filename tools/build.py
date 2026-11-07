@@ -2,6 +2,7 @@
 """Erzeugt Vorlagen (PDF + SVG) und die bebilderte Anleitung (PDF).
 
 Aufruf:  python3 tools/build.py [ausgabeordner]
+         ZUG_THEME=weihnachten python3 tools/build.py ausgabe-weihnachten   (Weihnachtsfarben)
 Benoetigt: Python 3, Node mit Playwright (Chromium) fuer den PDF-Druck.
 """
 import base64
@@ -46,6 +47,9 @@ def print_pdf(html_path, pdf_path, png_dir=None):
     subprocess.run(['node', script, html_path, pdf_path] + ([png_dir] if png_dir else []), check=True)
 
 
+SUFFIX = '-Weihnachten' if os.environ.get('ZUG_THEME') == 'weihnachten' else ''
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     svg_dir = os.path.join(OUT, 'svg')
@@ -79,9 +83,9 @@ def main():
     json.dump([dict(nr=i, key=p.key, titel=p.title, kopien=p.copies) for i, p in enumerate(pages, 1)],
               open(os.path.join(work, 'seiten.json'), 'w'), ensure_ascii=False, indent=1)
 
-    print_pdf(vor_html, os.path.join(OUT, 'Vorlagen-Eisenbahn-Adventskalender.pdf'),
+    print_pdf(vor_html, os.path.join(OUT, 'Vorlagen-Eisenbahn-Adventskalender%s.pdf' % SUFFIX),
               os.path.join(work, 'png-vorlagen') if os.environ.get('PNG') else None)
-    print_pdf(anl_html, os.path.join(OUT, 'Anleitung-Eisenbahn-Adventskalender.pdf'),
+    print_pdf(anl_html, os.path.join(OUT, 'Anleitung-Eisenbahn-Adventskalender%s.pdf' % SUFFIX),
               os.path.join(work, 'png-anleitung') if os.environ.get('PNG') else None)
     print('fertig:', OUT)
 

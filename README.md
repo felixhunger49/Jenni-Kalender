@@ -29,6 +29,16 @@ Drucken mit **„Tatsächliche Größe“ / 100 %** auf Karton mit 250–300 g/m
 
 Die Originalbilder liegen in `tiere/original/`, `python3 tools/freistellen.py` stellt sie frei und legt sie als `tiere/<name>.png` ab. Der Generator setzt sie so ins Fenster, dass die Pfoten auf der Fensterbank liegen.
 
+## Weihnachts-Version
+
+Gleiche Formen, Maße und Tiere, nur andere Farben und Muster (Rot, Grün, Gold, Schneeweiß): Waggon 1 rot mit Schneeflocken, Waggon 2 grün kariert, Waggon 3 gold mit Sternen, Waggon 4 weiß mit roten Zuckerstangen-Streifen, Lok mit rotem Kessel und Führerhaus auf grünem Fahrgestell. Ausgabe in `ausgabe-weihnachten/`.
+
+```bash
+ZUG_THEME=weihnachten python3 tools/build.py ausgabe-weihnachten
+```
+
+Die Farben stehen in `tools/zug.py` im Block `if THEME == 'weihnachten'`.
+
 ## Neu erzeugen
 
 ```bash
