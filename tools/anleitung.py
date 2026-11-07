@@ -5,7 +5,7 @@ from iso import render, Cam
 import modelle as M
 from zug import THEME
 
-XMAS = THEME == 'weihnachten'
+XMAS = THEME.startswith('weihnachten')
 SUB = ('Weihnachts-Edition · ' if XMAS else '') + 'Bastelvorlage &amp; Schritt-für-Schritt-Anleitung'
 ACCENT = '#B3262E' if XMAS else '#C98E6E'
 

@@ -47,7 +47,7 @@ def print_pdf(html_path, pdf_path, png_dir=None):
     subprocess.run(['node', script, html_path, pdf_path] + ([png_dir] if png_dir else []), check=True)
 
 
-SUFFIX = '-Weihnachten' if os.environ.get('ZUG_THEME') == 'weihnachten' else ''
+SUFFIX = '-Weihnachten' if os.environ.get('ZUG_THEME', '').startswith('weihnachten') else ''
 
 
 def main():

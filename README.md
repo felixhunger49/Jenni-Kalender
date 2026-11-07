@@ -31,10 +31,10 @@ Die Originalbilder liegen in `tiere/original/`, `python3 tools/freistellen.py` s
 
 ## Weihnachts-Version
 
-Gleiche Formen, Maße und Tiere, nur andere Farben und Muster (Rot, Grün, Gold, Schneeweiß): Waggon 1 rot mit Schneeflocken, Waggon 2 grün kariert, Waggon 3 gold mit Sternen, Waggon 4 weiß mit roten Zuckerstangen-Streifen, Lok mit rotem Kessel und Führerhaus auf grünem Fahrgestell. Ausgabe in `ausgabe-weihnachten/`.
+Gleiche Formen, Maße und Tiere, nur schlichte Weihnachtsfarben ohne Flächenmuster: Lok rot, Waggons abwechselnd grün und rot, Kästchen weiß mit roten oder grünen Zahlen. (Die bunte Variante mit Mustern gibt es weiter mit `ZUG_THEME=weihnachten`.) Ausgabe in `ausgabe-weihnachten/`.
 
 ```bash
-ZUG_THEME=weihnachten python3 tools/build.py ausgabe-weihnachten
+ZUG_THEME=weihnachten-schlicht python3 tools/build.py ausgabe-weihnachten
 ```
 
 Die Farben stehen in `tools/zug.py` im Block `if THEME == 'weihnachten'`.
