@@ -40,7 +40,7 @@ LOCO = dict(c='#B7C3A5', d='#8C9B79', boiler='#E8C4BA', boilerd='#C49A8E', cream
 TRUNK = WOOD2
 THEME = os.environ.get('ZUG_THEME', '')
 
-if THEME == 'weihnachten':
+if THEME.startswith('weihnachten'):
     # Weihnachtsfarben: Rot, Gruen, Gold, Schneeweiss. Formen, Masse und Tiere bleiben gleich.
     RED, REDD = '#B3262E', '#86191F'
     GREEN, GREEND = '#2E6B3F', '#1D4A2A'
@@ -72,6 +72,17 @@ if THEME == 'weihnachten':
     LOCO = dict(c=GREEN, d=GREEND, boiler=RED, boilerd=GOLD, cream=SNOW, scarf=GOLD,
                 cab=RED, frame=SNOW, cabpat=('flocken', SNOW, None), boilerpat=('flocken', SNOW, None),
                 star=STAR, gift=GREEN, ribbon=GOLD, tree=FIR, treed=FIRD, heart=GOLD)
+
+if THEME == 'weihnachten-schlicht':
+    # schlichter: keine Flaechenmuster, Lok rot, Waggons abwechselnd gruen / rot, Kaestchen weiss
+    def _wg(base, c, d, frame, alt):
+        return dict(base, c=c, d=d, acc=GOLD, frame=frame, pat=None, boxpat=None, star=STAR, star2=SNOW, gift=alt, ribbon=GOLD,
+                    bunt=[alt, SNOW, GOLD], num=d, tree=SNOW if c == GREEN else FIR, treed=SNOWD if c == GREEN else FIRD,
+                    box=SNOW, boxd=d, boxtree=_firtree, lid=SNOW)
+    WAGONS = [_wg(WAGONS[0], GREEN, GREEND, GOLD, RED), _wg(WAGONS[1], RED, REDD, SNOW, GREEN),
+              _wg(WAGONS[2], GREEN, GREEND, GOLD, RED), _wg(WAGONS[3], RED, REDD, SNOW, GREEN)]
+    LOCO = dict(c=GREEND, d=REDD, boiler=RED, boilerd=GOLD, cream=SNOW, scarf=GOLD,
+                cab=RED, frame=SNOW, star=STAR, gift=GREEN, ribbon=GOLD, tree=FIR, treed=FIRD, heart=GOLD)
 
 FONT_HAND = "'Patrick Hand', 'Hand', 'Comic Sans MS', cursive"
 FONT_TXT = "'Nunito', 'Liberation Sans', Arial, sans-serif"
